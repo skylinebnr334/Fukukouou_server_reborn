@@ -4,3 +4,21 @@ CREATE TABLE round1_info (
     current_stage	INTEGER,
     PRIMARY KEY(index)
 )
+CREATE TABLE round1_data (
+    index	INTEGER NOT NULL UNIQUE,
+    team1	INTEGER NOT NULL DEFAULT 0,
+    team2	INTEGER NOT NULL DEFAULT 0,
+    team3	INTEGER NOT NULL DEFAULT 0,
+    team4	INTEGER NOT NULL DEFAULT 0,
+    team5	INTEGER NOT NULL DEFAULT 0,
+    team6	INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY(index)
+)
+CREATE TABLE round1_tokutendt
+(
+    index     INTEGER NOT NULL DEFAULT 0 UNIQUE,
+    correct   INTEGER NOT NULL DEFAULT 1,
+    miss      INTEGER NOT NULL DEFAULT -1,
+    ask_throw INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (index)
+)

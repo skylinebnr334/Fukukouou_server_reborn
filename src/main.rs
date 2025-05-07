@@ -12,8 +12,12 @@ async fn rootpage()->impl Responder{
 }
 
 #[actix_web::main]
-async fn main()->std::io::Result<()>{
-
+async fn main()->std::io::Result<()> {
+    unsafe {
+        env::set_var("RUST_LOG", "info");
+    }
+    logger::init();
+    info!("Fukukouou Server v{}", env!("CARGO_PKG_VERSION"));
     HttpServer::new(|| {
         App::new()
             .service(rootpage)

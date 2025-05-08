@@ -28,7 +28,7 @@ async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
         .load::<Round1DataColumn>(&mut conn)
         .expect("Error loading round1 data");
     let return_obj=Round1DataReturnStruct{
-        result_data:vec![],
+        result_data:rows,
     };
     HttpResponse::Ok().json(web::Json(return_obj))
 }
@@ -69,6 +69,7 @@ async fn main()->std::io::Result<()> {
         App::new().app_data(Data::new(pool.clone()))
             .service(rootpage)
             .service(getRoundDatasR1)
+            .service(postRound1Data)
     )
         .bind(("127.0.0.1", 8080))?
     .run()

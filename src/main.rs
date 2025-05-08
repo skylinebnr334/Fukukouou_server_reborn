@@ -10,6 +10,7 @@ extern crate diesel;
 
 mod schema;
 mod model_round1;
+mod db;
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 

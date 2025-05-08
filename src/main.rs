@@ -12,7 +12,7 @@ mod schema;
 mod model_round1;
 mod db;
 
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Responder};
 use actix_web::web::Data;
 use diesel::RunQueryDsl;
 use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, SuccessReturnJson};
@@ -66,7 +66,9 @@ async fn main()->std::io::Result<()> {
     let pool=db::establish_connection();
 
     HttpServer::new(move ||
-        App::new().app_data(Data::new(pool.clone()))
+        App::new()
+            .wrap(middleware::Logger::default())
+            .app_data(Data::new(pool.clone()))
             .service(rootpage)
             .service(getRoundDatasR1)
             .service(postRound1Data)
@@ -93,7 +95,7 @@ mod unit_dbtest{
 
     pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
     #[actix_web::test]
-    async fn test_Round1Data() {
+    async fn test_Round1ScoreSettings() {
         let pool = db::establish_connection_for_test();
         pool.get().unwrap().run_pending_migrations(MIGRATIONS);
 
@@ -130,6 +132,47 @@ mod unit_dbtest{
         };
         compare_JS(Round1Dataresp,
         Round1DataResp_Soutei).await;
+
+
+    }
+    #[actix_web::test]
+    async fn test_Round1Data() {
+        let pool = db::establish_connection_for_test();
+        pool.get().unwrap().run_pending_migrations(MIGRATIONS);
+
+        let app = test::init_service(App::new().app_data
+        (Data::new(pool.clone()))
+            .service(rootpage)
+            .service(getRoundDatasR1)
+            .service(postRound1Data)
+        ).await;
+        let req = test::TestRequest::get().uri("/").to_request();
+        let resp = test::call_service(&app, req).await;
+        println!("{:?}", resp.response().body());
+
+        assert_eq!(resp.status(), StatusCode::OK);
+
+        let Round1SetData=Round1DataColumn{
+            id:0,
+            team1:1,
+            team2:2,
+            team3:0,
+            team4:1,
+            team5:2,
+            team6:1,
+        };
+        let Round1DataPostReq=test::TestRequest::post().uri("/Server1/set_round_data").set_json(web::Json(
+            Round1SetData.clone()
+        )).to_request();
+        let Round1DataPostresp = test::call_service(&app, Round1DataPostReq).await;
+
+        let Round1DataReq=test::TestRequest::get().uri("/Server1/get_round_datas").to_request();
+        let Round1Dataresp = test::call_service(&app, Round1DataReq).await;
+        let Round1DataResp_Soutei=Round1DataReturnStruct{
+            result_data:vec![Round1SetData]
+        };
+        compare_JS(Round1Dataresp,
+                   Round1DataResp_Soutei).await;
 
 
     }

@@ -29,9 +29,15 @@ jobs:
           override: true
           profile: minimal
 
-      - name: Build
+      - name: Test
         uses: actions-rs/cargo@v1
         with:
           use-cross: ${{ matrix.job.use-cross }}
-          command: build
+          command: test
           args: --release --target ${{ matrix.job.target }}
+      #- name: Build
+       # uses: actions-rs/cargo@v1
+        #with:
+         # use-cross: ${{ matrix.job.use-cross }}
+          #command: build
+          #args: --release --target ${{ matrix.job.target }}

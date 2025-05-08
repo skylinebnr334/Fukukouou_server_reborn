@@ -1,7 +1,7 @@
 use crate::schema::round1_data;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Insertable, Deserialize, Serialize)]
+#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy)]
 #[table_name = "round1_data"]
 pub struct Round1DataColumn {
     pub id: i32,

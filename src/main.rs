@@ -75,3 +75,70 @@ async fn main()->std::io::Result<()> {
     .run()
         .await
 }
+
+
+
+//tests
+
+#[cfg(test)]
+mod unit_dbtest{
+
+    use super::*;
+    use actix_web::dev::{ServiceResponse, WebService};
+    use actix_web::{http, test};
+    use actix_web::body::to_bytes;
+    use actix_web::http::StatusCode;
+    use serde_json::{Value, json};
+    use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+
+    pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
+    #[actix_web::test]
+    async fn test_Round1Data() {
+        let pool = db::establish_connection_for_test();
+        pool.get().unwrap().run_pending_migrations(MIGRATIONS);
+
+        let app = test::init_service(App::new().app_data
+        (Data::new(pool.clone()))
+            .service(rootpage)
+            .service(getRoundDatasR1)
+            .service(postRound1Data)
+        ).await;
+        let req = test::TestRequest::get().uri("/").to_request();
+        let resp = test::call_service(&app, req).await;
+        println!("{:?}", resp.response().body());
+
+        assert_eq!(resp.status(), StatusCode::OK);
+
+        let Round1SetData=Round1DataColumn{
+          id:0,
+            team1:1,
+            team2:2,
+            team3:0,
+            team4:1,
+            team5:2,
+            team6:1,
+        };
+        let Round1DataPostReq=test::TestRequest::post().uri("/Server1/set_round_data").set_json(web::Json(
+            Round1SetData.clone()
+        )).to_request();
+        let Round1DataPostresp = test::call_service(&app, Round1DataPostReq).await;
+
+        let Round1DataReq=test::TestRequest::get().uri("/Server1/get_round_datas").to_request();
+        let Round1Dataresp = test::call_service(&app, Round1DataReq).await;
+        let Round1DataResp_Soutei=Round1DataReturnStruct{
+            result_data:vec![Round1SetData]
+        };
+        compare_JS(Round1Dataresp,
+        Round1DataResp_Soutei).await;
+
+
+    }
+    async fn compare_JS(res:ServiceResponse,obj:impl serde::Serialize){
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>
+            (&to_bytes(res.into_body()).await.unwrap())
+            .unwrap(),
+            serde_json::to_value(obj).unwrap()
+        )
+    }
+}

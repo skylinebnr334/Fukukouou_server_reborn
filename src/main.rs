@@ -13,10 +13,24 @@ mod model_round1;
 mod db;
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::web::Data;
+use diesel::RunQueryDsl;
+use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct};
 
 #[get("/")]
-async fn rootpage()->impl Responder{
+async fn rootpage(db:web::Data<db::Pool>)->impl Responder{
     HttpResponse::Ok().body("root page")
+}
+#[get("/Server1/get_round_datas")]
+async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let rows=schema::round1_data::table
+        .load::<Round1DataColumn>(&mut conn)
+        .expect("Error loading round1 data");
+    let return_obj=Round1DataReturnStruct{
+        result_data:vec![],
+    };
+    HttpResponse::Ok().json(web::Json(return_obj))
 }
 
 #[actix_web::main]
@@ -26,11 +40,13 @@ async fn main()->std::io::Result<()> {
     }
     logger::init();
     info!("Fukukouou Server v{}", env!("CARGO_PKG_VERSION"));
+    let pool=db::establish_connection();
 
-    HttpServer::new(|| {
-        App::new()
+    HttpServer::new(move ||
+        App::new().app_data(Data::new(pool.clone()))
             .service(rootpage)
-    })
+            .service(getRoundDatasR1)
+    )
         .bind(("127.0.0.1", 8080))?
     .run()
         .await

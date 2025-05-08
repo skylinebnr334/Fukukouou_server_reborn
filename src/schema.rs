@@ -14,8 +14,8 @@ diesel::table! {
 
 diesel::table! {
     round1_info (id) {
-        id -> Nullable<Integer>,
-        current_stage -> Nullable<Integer>,
+        id -> Integer,
+        current_stage -> Integer,
     }
 }
 

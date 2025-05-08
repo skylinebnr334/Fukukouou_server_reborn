@@ -1,7 +1,7 @@
 -- Your SQL goes here
 CREATE TABLE round1_info (
-    id INTEGER UNIQUE,
-    current_stage INTEGER,
+    id INTEGER UNIQUE NOT NULL UNIQUE,
+    current_stage INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (id)
 );
 CREATE TABLE round1_data (

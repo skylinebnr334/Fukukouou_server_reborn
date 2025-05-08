@@ -4,6 +4,13 @@ extern crate env_logger as logger;
 use log::Level;
 use std::env;
 
+
+#[macro_use]
+extern crate diesel;
+
+mod schema;
+mod model_round1;
+
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 
 #[get("/")]
@@ -18,6 +25,7 @@ async fn main()->std::io::Result<()> {
     }
     logger::init();
     info!("Fukukouou Server v{}", env!("CARGO_PKG_VERSION"));
+
     HttpServer::new(|| {
         App::new()
             .service(rootpage)

@@ -15,7 +15,7 @@ mod db;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use actix_web::web::Data;
 use diesel::RunQueryDsl;
-use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct};
+use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, SuccessReturnJson};
 
 #[get("/")]
 async fn rootpage(db:web::Data<db::Pool>)->impl Responder{
@@ -31,6 +31,29 @@ async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
         result_data:vec![],
     };
     HttpResponse::Ok().json(web::Json(return_obj))
+}
+
+#[post("/Server1/set_round_data")]
+async fn postRound1Data(db:web::Data<db::Pool>,item:web::Json<model_round1::Round1DataColumn>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let new_round_data=model_round1::Round1DataColumn{
+        id:item.id,
+        team1:item.team1,
+        team2:item.team2,
+        team3:item.team3,
+        team4:item.team4,
+        team5:item.team5,
+        team6:item.team6,
+    };
+    diesel::replace_into(schema::round1_data::dsl::round1_data)
+        .values(&new_round_data)
+        .execute(&mut conn)
+        .expect("Error creating Round1 data");
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
 }
 
 #[actix_web::main]

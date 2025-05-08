@@ -17,6 +17,13 @@ pub struct Round1DataColumn {
 pub struct Round1DataReturnStruct{
     pub result_data:Vec<Round1DataColumn>,
 }
+
+
+#[derive(Queryable, Deserialize, Serialize)]
+
+pub struct SuccessReturnJson{
+    pub status:String
+}
 pub struct Round1IndexRound {
     pub id: i32,
     pub current_stage : i32,

@@ -1,9 +1,10 @@
+use crate::schema::round1_info;
 use crate::schema::round1_tokutendt;
 use crate::schema::round1_data;
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy)]
-#[table_name = "round1_data"]
+#[diesel(table_name = round1_data)]
 pub struct Round1DataColumn {
     pub id: i32,
     pub team1 : i32,
@@ -31,16 +32,24 @@ pub struct Round1ScoreSettingReturnStruct{
 pub struct SuccessReturnJson{
     pub status:String
 }
+
+#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy)]
+#[diesel(table_name = round1_info)]
 pub struct Round1IndexRound {
     pub id: i32,
     pub current_stage : i32,
 }
 
 #[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy)]
-#[table_name = "round1_tokutendt"]
+#[diesel(table_name = round1_tokutendt)]
 pub struct Round1ScoreConfigDataColumn {
     pub id:i32,
     pub correct:i32,
     pub miss:i32,
     pub ask_throw:i32,
+}
+
+#[derive(Queryable, Deserialize, Serialize, Clone, Copy)]
+pub struct Round1NextRoundDT{
+    pub current_stage:i32
 }

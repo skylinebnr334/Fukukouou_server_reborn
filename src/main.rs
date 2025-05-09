@@ -15,7 +15,7 @@ mod db;
 use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Responder};
 use actix_web::web::Data;
 use diesel::RunQueryDsl;
-use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson};
+use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, Round1IndexRound, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson};
 
 #[get("/")]
 async fn rootpage(db:web::Data<db::Pool>)->impl Responder{
@@ -90,6 +90,40 @@ async fn postScore_settingRound1(db:web::Data<db::Pool>,item:web::Json<model_rou
     )
 }
 
+#[get("/Server1/next_round")]
+async fn getNextRound1(db:web::Data<db::Pool>)->impl Responder{
+
+    let mut conn=db.get().unwrap();
+    let rows=schema::round1_info::table
+        .load::<Round1IndexRound>(&mut conn)
+        .expect("Error loading round1 Score");
+    for n in rows{
+
+        return HttpResponse::Ok().body(n.current_stage.to_string());
+    }
+    HttpResponse::Ok().body('0'.to_string())
+}
+
+
+
+#[post("/Server1/next_round")]
+async fn postNextRound1(db:web::Data<db::Pool>,item:web::Json<model_round1::Round1NextRoundDT>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let new_RD=model_round1::Round1IndexRound{
+        id:0,
+        current_stage:item.current_stage
+    };
+    diesel::replace_into(schema::round1_info::dsl::round1_info)
+        .values(&new_RD)
+        .execute(&mut conn)
+        .expect("Error creating Round1 Stage Config");
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
+
 
 #[actix_web::main]
 async fn main()->std::io::Result<()> {
@@ -109,6 +143,8 @@ async fn main()->std::io::Result<()> {
             .service(postRound1Data)
             .service(get_score_settingRound1)
             .service(postScore_settingRound1)
+            .service(getNextRound1)
+            .service(postNextRound1)
     )
         .bind(("127.0.0.1", 8080))?
     .run()
@@ -129,6 +165,7 @@ mod unit_dbtest{
     use actix_web::http::StatusCode;
     use serde_json::{Value, json};
     use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+    use crate::model_round1::Round1NextRoundDT;
 
     pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
     #[actix_web::test]
@@ -163,6 +200,53 @@ mod unit_dbtest{
 
 
     }
+
+
+    #[actix_web::test]
+    async fn test_Round1StageInfo() {
+        let pool = db::establish_connection_for_test();
+        pool.get().unwrap().run_pending_migrations(MIGRATIONS);
+
+        let app = test::init_service(App::new().app_data
+        (Data::new(pool.clone()))
+            .service(getNextRound1)
+            .service(postNextRound1)
+        ).await;
+
+        let Round1StageeReq_1=test::TestRequest::get().uri("/Server1/next_round").to_request();
+        let Round1Stageresp_1 = test::call_service(&app, Round1StageeReq_1).await;
+        let Round1ScoreResp_Soutei_1=0;
+        assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_1.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_1.to_string());
+
+
+        let Round1SetStage=Round1NextRoundDT{
+            current_stage:6
+        };
+        let Round1StagePostReq=test::TestRequest::post().uri("/Server1/next_round").set_json(web::Json(
+            Round1SetStage.clone()
+        )).to_request();
+        let Round1StagePostresp = test::call_service(&app, Round1StagePostReq).await;
+        let Round1StageeReq_2=test::TestRequest::get().uri("/Server1/next_round").to_request();
+        let Round1Stageresp_2 = test::call_service(&app, Round1StageeReq_2).await;
+        let Round1ScoreResp_Soutei_2=6;
+        assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_2.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_2.to_string());
+
+        let Round1SetStage_3=Round1NextRoundDT{
+            current_stage:-1
+        };
+        let Round1StagePostReq_3=test::TestRequest::post().uri("/Server1/next_round").set_json(web::Json(
+            Round1SetStage_3.clone()
+        )).to_request();
+        let Round1StagePostresp_3 = test::call_service(&app, Round1StagePostReq_3).await;
+        let Round1StageeReq_3=test::TestRequest::get().uri("/Server1/next_round").to_request();
+        let Round1Stageresp_3 = test::call_service(&app, Round1StageeReq_3).await;
+        let Round1ScoreResp_Soutei_3=Round1SetStage_3.current_stage;
+        assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_3.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_3.to_string());
+
+
+
+    }
+
     #[actix_web::test]
     async fn test_Round1Data() {
         let pool = db::establish_connection_for_test();

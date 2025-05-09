@@ -70,7 +70,7 @@ async fn get_score_settingRound1(db:web::Data<db::Pool>)->impl Responder{
 }
 
 
-#[post("set_score_setting")]
+#[post("/Server1/set_score_setting")]
 async fn postScore_settingRound1(db:web::Data<db::Pool>,item:web::Json<model_round1::Round1ScoreConfigDataColumn>)->impl Responder{
     let mut conn=db.get().unwrap();
     let new_scorecf_data=model_round1::Round1ScoreConfigDataColumn{
@@ -138,37 +138,28 @@ mod unit_dbtest{
 
         let app = test::init_service(App::new().app_data
         (Data::new(pool.clone()))
-            .service(rootpage)
-            .service(getRoundDatasR1)
-            .service(postRound1Data)
+            .service(get_score_settingRound1)
+            .service(postScore_settingRound1)
         ).await;
-        let req = test::TestRequest::get().uri("/").to_request();
-        let resp = test::call_service(&app, req).await;
-        println!("{:?}", resp.response().body());
 
-        assert_eq!(resp.status(), StatusCode::OK);
-
-        let Round1SetData=Round1DataColumn{
+        let Round1SetScore=Round1ScoreConfigDataColumn{
           id:0,
-            team1:1,
-            team2:2,
-            team3:0,
-            team4:1,
-            team5:2,
-            team6:1,
+            miss:-1,
+            correct:1,
+            ask_throw:0,
         };
-        let Round1DataPostReq=test::TestRequest::post().uri("/Server1/set_round_data").set_json(web::Json(
-            Round1SetData.clone()
+        let Round1ScorePostReq=test::TestRequest::post().uri("/Server1/set_score_setting").set_json(web::Json(
+            Round1SetScore.clone()
         )).to_request();
-        let Round1DataPostresp = test::call_service(&app, Round1DataPostReq).await;
+        let Round1ScorePostresp = test::call_service(&app, Round1ScorePostReq).await;
 
-        let Round1DataReq=test::TestRequest::get().uri("/Server1/get_round_datas").to_request();
-        let Round1Dataresp = test::call_service(&app, Round1DataReq).await;
-        let Round1DataResp_Soutei=Round1DataReturnStruct{
-            result_data:vec![Round1SetData]
+        let Round1ScoreReq=test::TestRequest::get().uri("/Server1/get_score_setting").to_request();
+        let Round1Scoreresp = test::call_service(&app, Round1ScoreReq).await;
+        let Round1ScoreResp_Soutei=Round1ScoreSettingReturnStruct{
+            result_data:vec![Round1SetScore]
         };
-        compare_JS(Round1Dataresp,
-        Round1DataResp_Soutei).await;
+        compare_JS(Round1Scoreresp,
+                   Round1ScoreResp_Soutei).await;
 
 
     }

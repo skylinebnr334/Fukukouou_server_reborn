@@ -1,3 +1,4 @@
+use crate::schema::round1_tokutendt;
 use crate::schema::round1_data;
 use serde::{Deserialize, Serialize};
 
@@ -18,6 +19,12 @@ pub struct Round1DataReturnStruct{
     pub result_data:Vec<Round1DataColumn>,
 }
 
+#[derive(Queryable, Deserialize, Serialize)]
+
+pub struct Round1ScoreSettingReturnStruct{
+    pub result_data:Vec<Round1ScoreConfigDataColumn>,
+}
+
 
 #[derive(Queryable, Deserialize, Serialize)]
 
@@ -28,6 +35,9 @@ pub struct Round1IndexRound {
     pub id: i32,
     pub current_stage : i32,
 }
+
+#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy)]
+#[table_name = "round1_tokutendt"]
 pub struct Round1ScoreConfigDataColumn {
     pub id:i32,
     pub correct:i32,

@@ -15,7 +15,7 @@ mod db;
 use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Responder};
 use actix_web::web::Data;
 use diesel::RunQueryDsl;
-use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, SuccessReturnJson};
+use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson};
 
 #[get("/")]
 async fn rootpage(db:web::Data<db::Pool>)->impl Responder{
@@ -56,6 +56,41 @@ async fn postRound1Data(db:web::Data<db::Pool>,item:web::Json<model_round1::Roun
     )
 }
 
+#[get("/Server1/get_score_setting")]
+async fn get_score_settingRound1(db:web::Data<db::Pool>)->impl Responder{
+
+    let mut conn=db.get().unwrap();
+    let rows=schema::round1_tokutendt::table
+        .load::<Round1ScoreConfigDataColumn>(&mut conn)
+        .expect("Error loading round1 Score");
+    let return_obj=Round1ScoreSettingReturnStruct{
+        result_data:rows,
+    };
+    HttpResponse::Ok().json(web::Json(return_obj))
+}
+
+
+#[post("set_score_setting")]
+async fn postScore_settingRound1(db:web::Data<db::Pool>,item:web::Json<model_round1::Round1ScoreConfigDataColumn>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let new_scorecf_data=model_round1::Round1ScoreConfigDataColumn{
+        id:item.id,
+        ask_throw:item.ask_throw,
+        correct:item.correct,
+        miss:item.miss
+    };
+    diesel::replace_into(schema::round1_tokutendt::dsl::round1_tokutendt)
+        .values(&new_scorecf_data)
+        .execute(&mut conn)
+        .expect("Error creating Round1 Score Config");
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
+
+
 #[actix_web::main]
 async fn main()->std::io::Result<()> {
     unsafe {
@@ -72,6 +107,8 @@ async fn main()->std::io::Result<()> {
             .service(rootpage)
             .service(getRoundDatasR1)
             .service(postRound1Data)
+            .service(get_score_settingRound1)
+            .service(postScore_settingRound1)
     )
         .bind(("127.0.0.1", 8080))?
     .run()

@@ -3,7 +3,8 @@ extern crate log;
 extern crate env_logger as logger;
 use log::Level;
 use std::env;
-
+use std::time::Instant;
+use actix::Addr;
 
 #[macro_use]
 extern crate diesel;
@@ -14,11 +15,46 @@ mod db;
 mod ws_actors;
 mod actorServer_forws;
 
-use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, middleware, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use actix_web::web::Data;
+use actix_web_actors::ws;
 use diesel::RunQueryDsl;
+use crate::actorServer_forws::{WsSession_Round1Refresh, WsSession_Round2Refresh};
 use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, Round1IndexRound, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson};
+use crate::ws_actors::WsActor;
 
+pub async fn ws_route_Round1Refresh(
+    req: HttpRequest,
+    stream: web::Payload,
+    srv:web::Data<Addr<WsActor>>,
+)->Result<HttpResponse,actix_web::Error> {
+    ws::start(
+        WsSession_Round1Refresh{
+            id:0,
+            hb:Instant::now(),
+            addr:srv.get_ref().clone(),
+        },
+        &req,
+        stream
+    )
+}
+
+
+pub async fn ws_route_Round2Refresh(
+    req: HttpRequest,
+    stream: web::Payload,
+    srv:web::Data<Addr<WsActor>>,
+)->Result<HttpResponse,actix_web::Error> {
+    ws::start(
+        WsSession_Round2Refresh{
+            id:0,
+            hb:Instant::now(),
+            addr:srv.get_ref().clone(),
+        },
+        &req,
+        stream
+    )
+}
 
 
 

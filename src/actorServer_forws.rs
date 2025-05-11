@@ -7,10 +7,10 @@ use crate::ws_actors::WsActor;
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
-struct WsSession_Round1Refresh{
-    id:u32,
-    hb:Instant,
-    addr:Addr<WsActor>
+pub struct WsSession_Round1Refresh{
+    pub(crate) id:u32,
+    pub(crate) hb:Instant,
+    pub(crate) addr:Addr<WsActor>
 }
 impl WsSession_Round1Refresh{
     fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {
@@ -107,10 +107,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession_Round1R
 
 
 
-struct WsSession_Round2Refresh{
-    id:u32,
-    hb:Instant,
-    addr:Addr<WsActor>
+pub struct WsSession_Round2Refresh{
+    pub(crate) id:u32,
+    pub(crate) hb:Instant,
+    pub(crate) addr:Addr<WsActor>
 }
 impl WsSession_Round2Refresh{
     fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {

@@ -62,6 +62,6 @@ impl Handler<crate::ws_actors::Message> for WsSession_Round1Refresh {
         _ctx.text(msg.0);
     }
 }
-impl StreamHeader<Result<ws::Message, ws::ProtocolError>> for WsSession_Round1Refresh {
-    
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession_Round1Refresh {
+
 }

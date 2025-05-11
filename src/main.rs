@@ -4,7 +4,7 @@ extern crate env_logger as logger;
 use log::Level;
 use std::env;
 use std::time::Instant;
-use actix::Addr;
+use actix::{Actor, Addr};
 
 #[macro_use]
 extern crate diesel;
@@ -21,7 +21,8 @@ use actix_web_actors::ws;
 use diesel::RunQueryDsl;
 use crate::actorServer_forws::{WsSession_Round1Refresh, WsSession_Round2Refresh};
 use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, Round1IndexRound, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson};
-use crate::ws_actors::WsActor;
+use crate::ws_actors::{Round1RefreshMessage, WsActor};
+
 
 pub async fn ws_route_Round1Refresh(
     req: HttpRequest,
@@ -77,7 +78,7 @@ async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
 }
 
 #[post("/Server1/set_round_data")]
-async fn postRound1Data(db:web::Data<db::Pool>,item:web::Json<model_round1::Round1DataColumn>)->impl Responder{
+async fn postRound1Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,item:web::Json<model_round1::Round1DataColumn>)->impl Responder{
     let mut conn=db.get().unwrap();
     let new_round_data=model_round1::Round1DataColumn{
         id:item.id,
@@ -92,6 +93,7 @@ async fn postRound1Data(db:web::Data<db::Pool>,item:web::Json<model_round1::Roun
         .values(&new_round_data)
         .execute(&mut conn)
         .expect("Error creating Round1 data");
+    srv.get_ref().do_send(Round1RefreshMessage {msg:"refresh".parse().unwrap() });
     HttpResponse::Ok().json(
         web::Json(SuccessReturnJson{
             status:"success".to_string()
@@ -126,6 +128,7 @@ async fn postScore_settingRound1(db:web::Data<db::Pool>,item:web::Json<model_rou
         .values(&new_scorecf_data)
         .execute(&mut conn)
         .expect("Error creating Round1 Score Config");
+
     HttpResponse::Ok().json(
         web::Json(SuccessReturnJson{
             status:"success".to_string()
@@ -177,10 +180,14 @@ async fn main()->std::io::Result<()> {
     info!("Fukukouou Server v{}", env!("CARGO_PKG_VERSION"));
     let pool=db::establish_connection();
 
+    let ws_server = WsActor::new().start();
+
+
     HttpServer::new(move ||
         App::new()
             .wrap(middleware::Logger::default())
             .app_data(Data::new(pool.clone()))
+            .app_data(Data::new(ws_server.clone()))
             .service(rootpage)
             .service(getRoundDatasR1)
             .service(postRound1Data)
@@ -188,6 +195,9 @@ async fn main()->std::io::Result<()> {
             .service(postScore_settingRound1)
             .service(getNextRound1)
             .service(postNextRound1)
+            .service(web::resource("/Server1/round1_ws").to(ws_route_Round1Refresh))
+            .service(web::resource("/Server2/round2_ws").to(ws_route_Round2Refresh))
+
     )
         .bind(("127.0.0.1", 8080))?
     .run()
@@ -295,8 +305,10 @@ mod unit_dbtest{
         let pool = db::establish_connection_for_test();
         pool.get().unwrap().run_pending_migrations(MIGRATIONS);
 
+        let ws_server = WsActor::new().start();
         let app = test::init_service(App::new().app_data
         (Data::new(pool.clone()))
+            .app_data(Data::new(ws_server.clone()))
             .service(rootpage)
             .service(getRoundDatasR1)
             .service(postRound1Data)

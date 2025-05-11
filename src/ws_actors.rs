@@ -66,3 +66,50 @@ impl WsActor{
 impl Actor for WsActor{
     type Context = Context<Self>;
 }
+
+impl Handler<Connect_Round1Refresh> for WsActor{
+    type Result=u32;
+    fn handle(&mut self, msg: Connect_Round1Refresh, _: &mut Context<Self>) -> Self::Result {
+        let cliendid=rand::random::<u32>();
+        self.sessions_Round1Reflesh.insert(cliendid, msg.addr);
+        cliendid
+    }
+
+}
+impl Handler<Disconnect_Round1Refresh> for WsActor{
+    type Result=();
+    fn handle(&mut self, msg: Disconnect_Round1Refresh, _: &mut Context<Self>) -> Self::Result {
+        let cliendid=msg.id;
+        self.sessions_Round1Reflesh.remove(&cliendid);
+    }
+}
+impl Handler<Round1RefreshMessage> for  WsActor{
+    type Result=();
+    fn handle(&mut self, msg: Round1RefreshMessage, _: &mut Context<Self>) -> Self::Result {
+        self.send_message_R1Refresh(&msg.msg);
+    }
+}
+
+
+impl Handler<Connect_Round2Refresh> for WsActor{
+    type Result=u32;
+    fn handle(&mut self, msg: Connect_Round2Refresh, _: &mut Context<Self>) -> Self::Result {
+        let cliendid=rand::random::<u32>();
+        self.sessions_Round2Reflesh.insert(cliendid, msg.addr);
+        cliendid
+    }
+
+}
+impl Handler<Disconnect_Round2Refresh> for WsActor{
+    type Result=();
+    fn handle(&mut self, msg: Disconnect_Round2Refresh, _: &mut Context<Self>) -> Self::Result {
+        let cliendid=msg.id;
+        self.sessions_Round2Reflesh.remove(&cliendid);
+    }
+}
+impl Handler<Round2RefreshMessage> for  WsActor{
+    type Result=();
+    fn handle(&mut self, msg: Round2RefreshMessage, _: &mut Context<Self>) -> Self::Result {
+        self.send_message_R2Refresh(&msg.msg);
+    }
+}

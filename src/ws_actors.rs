@@ -12,13 +12,26 @@ pub struct WsActor {
 pub struct Message(pub String);
 # [derive(Message)]
 # [rtype(u32)]
-pub struct Connect{
-    pub address:Recipient<Message>,
+pub struct Connect_Round1Refresh{
+    pub addr:Recipient<Message>,
 }
 
 # [derive(Message)]
 # [rtype(result = "()")]
-pub struct Disconnect{
+pub struct Disconnect_Round1Refresh{
+    pub id:u32
+}
+
+
+# [derive(Message)]
+# [rtype(u32)]
+pub struct Connect_Round2Refresh{
+    pub addr:Recipient<Message>,
+}
+
+# [derive(Message)]
+# [rtype(result = "()")]
+pub struct Disconnect_Round2Refresh{
     pub id:u32
 }
 # [derive(Message)]

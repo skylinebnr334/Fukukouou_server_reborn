@@ -20,6 +20,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    round1_questions (stageno) {
+        stageno -> Integer,
+        question -> Nullable<Text>,
+        answer -> Nullable<Text>,
+        comment -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
     round1_tokutendt (id) {
         id -> Integer,
         correct -> Integer,
@@ -31,5 +40,6 @@ diesel::table! {
 diesel::allow_tables_to_appear_in_same_query!(
     round1_data,
     round1_info,
+    round1_questions,
     round1_tokutendt,
 );

@@ -11,6 +11,7 @@ extern crate diesel;
 
 mod schema;
 mod model_round1;
+mod model_round1_questions;
 mod db;
 mod ws_actors;
 mod actorServer_forws;

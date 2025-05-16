@@ -22,9 +22,9 @@ diesel::table! {
 diesel::table! {
     round1_questions (stageno) {
         stageno -> Integer,
-        question -> Nullable<Text>,
-        answer -> Nullable<Text>,
-        comment -> Nullable<Text>,
+        question -> Text,
+        answer -> Text,
+        comment -> Text,
     }
 }
 

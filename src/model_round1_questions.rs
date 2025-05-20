@@ -1,3 +1,4 @@
+use crate::schema::round1_questions;
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Insertable, Deserialize, Serialize, Clone)]

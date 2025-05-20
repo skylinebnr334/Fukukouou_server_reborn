@@ -4,6 +4,11 @@ use crate::schema::round1_data;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 
+#[derive(ToSchema,Serialize,Deserialize)]
+pub struct ErrorMsgStruct{
+    pub error_shortmsg:String,
+    pub error_msg:String,
+}
 #[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy,ToSchema)]
 #[diesel(table_name = round1_data)]
 pub struct Round1DataColumn {
@@ -19,6 +24,11 @@ pub struct Round1DataColumn {
 
 pub struct Round1DataReturnStruct{
     pub result_data:Vec<Round1DataColumn>,
+}
+#[derive(Queryable, Deserialize, Serialize,ToSchema)]
+
+pub struct Round1DataReturnStruct_KOBETSU{
+    pub result_data:Round1DataColumn,
 }
 
 #[derive(Queryable, Deserialize, Serialize)]
@@ -57,7 +67,7 @@ pub struct Round1NextRoundDT{
 
 #[derive(Deserialize, IntoParams)]
 pub struct TID{
-    id:i32
+    pub(crate) id:i32
 }
 impl TID{
     pub fn id(&self) -> i32{

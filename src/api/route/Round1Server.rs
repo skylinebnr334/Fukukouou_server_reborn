@@ -2,11 +2,11 @@ use std::time::Instant;
 use actix::Addr;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use actix_web_actors::ws;
-use diesel::RunQueryDsl;
+use diesel::{QueryDsl, RunQueryDsl};
 
 use crate::actorServer_forws::WsSession_Round1Refresh;
 use crate::{db, schema};
-use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, Round1IndexRound, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson, TID};
+use crate::model_round1::{ErrorMsgStruct, Round1DataColumn, Round1DataReturnStruct, Round1DataReturnStruct_KOBETSU, Round1IndexRound, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson, TID};
 use crate::ws_actors::{Round1RefreshMessage, WsActor};
 
 pub async fn ws_route_Round1Refresh(
@@ -49,13 +49,24 @@ async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
 async fn getRoundDatasR1_Child(db:web::Data<db::Pool>,
 req:web::Path<TID>)->impl Responder{
     let mut conn=db.get().unwrap();
-    let rows=schema::round1_data::table
-        .load::<Round1DataColumn>(&mut conn)
-        .expect("Error loading round1 data");
-    let return_obj=Round1DataReturnStruct{
-        result_data:rows,
-    };
-    HttpResponse::Ok().json(web::Json(return_obj))
+    let Result_DT=schema::round1_data::table
+        .find(req.id)
+        .first::<Round1DataColumn>(&mut conn);
+    match Result_DT{
+        Ok(dt)=>{
+
+            let return_obj=Round1DataReturnStruct_KOBETSU{
+                result_data:dt
+            };
+            HttpResponse::Ok().json(web::Json(return_obj))
+        }
+        Err(err)=>{
+            HttpResponse::InternalServerError().json(web::Json(ErrorMsgStruct{
+                error_shortmsg:"DB Error".parse().unwrap(),
+                error_msg:err.to_string()
+            }))
+        }
+    }
 }
 
 

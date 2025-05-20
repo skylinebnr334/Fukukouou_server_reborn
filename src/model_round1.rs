@@ -2,8 +2,9 @@ use crate::schema::round1_info;
 use crate::schema::round1_tokutendt;
 use crate::schema::round1_data;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy)]
+#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy,ToSchema)]
 #[diesel(table_name = round1_data)]
 pub struct Round1DataColumn {
     pub id: i32,
@@ -14,7 +15,7 @@ pub struct Round1DataColumn {
     pub  team5 : i32,
     pub  team6 : i32,
 }
-#[derive(Queryable, Deserialize, Serialize)]
+#[derive(Queryable, Deserialize, Serialize,ToSchema)]
 
 pub struct Round1DataReturnStruct{
     pub result_data:Vec<Round1DataColumn>,

@@ -2,8 +2,13 @@ mod Round1Server;
 use utoipa_swagger_ui::SwaggerUi;
 use actix_web::web;
 use utoipa::OpenApi;
-
+use crate::api::route;
 #[derive(OpenApi)]
+#[openapi(
+paths(
+route::Round1Server::getRoundDatasR1
+)
+)]
 struct Api_Doc;
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.configure(

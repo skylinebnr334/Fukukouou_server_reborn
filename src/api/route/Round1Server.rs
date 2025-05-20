@@ -3,6 +3,7 @@ use actix::Addr;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use actix_web_actors::ws;
 use diesel::RunQueryDsl;
+
 use crate::actorServer_forws::WsSession_Round1Refresh;
 use crate::{db, schema};
 use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, Round1IndexRound, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson};
@@ -23,6 +24,14 @@ pub async fn ws_route_Round1Refresh(
         stream
     )
 }
+#[utoipa::path(
+    get,
+path="/Server1/get_round_datas",
+    responses(
+        (status = 200, description = "Get Round1 Data", body = Round1DataReturnStruct),
+        (status = 500, description = "Internal error")
+    ),
+)]
 #[get("/Server1/get_round_datas")]
 async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
     let mut conn=db.get().unwrap();

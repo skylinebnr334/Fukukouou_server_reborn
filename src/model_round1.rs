@@ -38,7 +38,7 @@ pub struct Round1ScoreSettingReturnStruct{
 }
 
 
-#[derive(Queryable, Deserialize, Serialize)]
+#[derive(Queryable, Deserialize, Serialize,ToSchema)]
 
 pub struct SuccessReturnJson{
     pub status:String

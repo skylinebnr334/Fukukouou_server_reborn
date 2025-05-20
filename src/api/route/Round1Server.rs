@@ -26,7 +26,7 @@ pub async fn ws_route_Round1Refresh(
 }
 #[utoipa::path(
     get,
-path="/Server1/RoundData",
+path="/Server1/round_datas",
     responses(
         (status = 200, description = "Get Round1 Data", body = Round1DataReturnStruct),
         (status = 500, description = "Internal error")
@@ -70,6 +70,15 @@ req:web::Path<TID>)->impl Responder{
 }
 
 
+#[utoipa::path(
+    post,
+    path="/Server1/round_datas",
+    request_body = Round1DataColumn,
+    responses(
+        (status = 200, description = "Register Round1 ScoreData", body = SuccessReturnJson),
+        (status = 500, description = "Internal error")
+    ),
+)]
 #[post("/round_datas")]
 async fn postRound1Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,item:web::Json<crate::model_round1::Round1DataColumn>)->impl Responder{
     let mut conn=db.get().unwrap();

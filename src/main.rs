@@ -129,12 +129,12 @@ mod unit_dbtest{
             correct:1,
             ask_throw:0,
         };
-        let Round1ScorePostReq=test::TestRequest::post().uri("/Server1/set_score_setting").set_json(web::Json(
+        let Round1ScorePostReq=test::TestRequest::post().uri("/Server1/score_setting").set_json(web::Json(
             Round1SetScore.clone()
         )).to_request();
         let Round1ScorePostresp = test::call_service(&app, Round1ScorePostReq).await;
 
-        let Round1ScoreReq=test::TestRequest::get().uri("/Server1/get_score_setting").to_request();
+        let Round1ScoreReq=test::TestRequest::get().uri("/Server1/score_setting").to_request();
         let Round1Scoreresp = test::call_service(&app, Round1ScoreReq).await;
         let Round1ScoreResp_Soutei=Round1ScoreSettingReturnStruct{
             result_data:vec![Round1SetScore]

@@ -103,7 +103,7 @@ async fn postRound1Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,item
     )
 }
 
-#[get("/get_score_setting")]
+#[get("/score_setting")]
 async fn get_score_settingRound1(db:web::Data<db::Pool>)->impl Responder{
 
     let mut conn=db.get().unwrap();
@@ -117,7 +117,7 @@ async fn get_score_settingRound1(db:web::Data<db::Pool>)->impl Responder{
 }
 
 
-#[post("/set_score_setting")]
+#[post("/score_setting")]
 async fn postScore_settingRound1(db:web::Data<db::Pool>,item:web::Json<crate::model_round1::Round1ScoreConfigDataColumn>)->impl Responder{
     let mut conn=db.get().unwrap();
     let new_scorecf_data=crate::model_round1::Round1ScoreConfigDataColumn{

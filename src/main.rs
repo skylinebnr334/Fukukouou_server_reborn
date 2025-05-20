@@ -217,12 +217,12 @@ mod unit_dbtest{
             team5:2,
             team6:1,
         };
-        let Round1DataPostReq=test::TestRequest::post().uri("/Server1/set_round_data").set_json(web::Json(
+        let Round1DataPostReq=test::TestRequest::post().uri("/Server1/round_datas").set_json(web::Json(
             Round1SetData.clone()
         )).to_request();
         let Round1DataPostresp = test::call_service(&app, Round1DataPostReq).await;
 
-        let Round1DataReq=test::TestRequest::get().uri("/Server1/get_round_datas").to_request();
+        let Round1DataReq=test::TestRequest::get().uri("/Server1/round_datas").to_request();
         let Round1Dataresp = test::call_service(&app, Round1DataReq).await;
         let Round1DataResp_Soutei=Round1DataReturnStruct{
             result_data:vec![Round1SetData]

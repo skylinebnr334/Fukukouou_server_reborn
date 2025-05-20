@@ -22,6 +22,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         Round1Server::Round1config
     ).service(
         SwaggerUi::new("/swagger-ui/{_:.*}")
-            .url("/api-doc/opanapi.json", Api_Doc::openapi()),
+            .url("/api-doc/openapi.json", Api_Doc::openapi()),
     );
 }

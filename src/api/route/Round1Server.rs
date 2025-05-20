@@ -128,3 +128,15 @@ async fn postNextRound1(db:web::Data<db::Pool>,item:web::Json<crate::model_round
     )
 }
 
+
+pub fn Round1config(cfg: &mut web::ServiceConfig) {
+    cfg
+        .service(getRoundDatasR1)
+        .service(postRound1Data)
+        .service(get_score_settingRound1)
+        .service(postScore_settingRound1)
+        .service(getNextRound1)
+        .service(postNextRound1)
+        .service(web::resource("/Server1/round1_ws").to(ws_route_Round1Refresh));
+
+}

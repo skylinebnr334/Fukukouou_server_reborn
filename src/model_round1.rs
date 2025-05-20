@@ -2,6 +2,7 @@ use crate::schema::round1_info;
 use crate::schema::round1_tokutendt;
 use crate::schema::round1_data;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use utoipa::{IntoParams, ToSchema};
 
 #[derive(ToSchema,Serialize,Deserialize)]
@@ -10,6 +11,7 @@ pub struct ErrorMsgStruct{
     pub error_msg:String,
 }
 #[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy,ToSchema)]
+#[schema(example = json!({"id": 0, "team1":0, "team2":1, "team3":2, "team4":0, "team5":0, "team6":0}))]
 #[diesel(table_name = round1_data)]
 pub struct Round1DataColumn {
     pub id: i32,

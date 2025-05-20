@@ -6,7 +6,8 @@ use crate::api::route;
 #[derive(OpenApi)]
 #[openapi(
 paths(
-route::Round1Server::getRoundDatasR1,
+route::Round1Server::getRoundDatasR1, 
+    route::Round1Server::getRoundDatasR1_Child,
 route::Round1Server::postRound1Data,
 ),
 components(

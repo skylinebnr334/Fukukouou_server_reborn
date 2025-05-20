@@ -45,6 +45,15 @@ async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
 }
 
 
+#[utoipa::path(
+    get,
+    params(TID),
+    path="/Server1/round_datas/{id}",
+    responses(
+        (status = 200, description = "Get Round1 Data", body = Round1DataReturnStruct_KOBETSU),
+        (status = 500, description = "Internal error")
+    ),
+)]
 #[get("/round_datas/{id}")]
 async fn getRoundDatasR1_Child(db:web::Data<db::Pool>,
 req:web::Path<TID>)->impl Responder{

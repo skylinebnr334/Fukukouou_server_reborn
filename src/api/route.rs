@@ -6,7 +6,14 @@ use crate::api::route;
 #[derive(OpenApi)]
 #[openapi(
 paths(
-route::Round1Server::getRoundDatasR1
+route::Round1Server::getRoundDatasR1,
+route::Round1Server::postRound1Data,
+),
+components(
+    schemas(
+        crate::model_round1::Round1DataColumn,
+        crate::model_round1::Round1DataReturnStruct
+    )
 )
 )]
 struct Api_Doc;

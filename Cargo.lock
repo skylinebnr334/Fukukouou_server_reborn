@@ -1964,6 +1964,7 @@ version = "9.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "161166ec520c50144922a625d8bc4925cc801b2dda958ab69878527c0e5c5d61"
 dependencies = [
+ "actix-web",
  "base64",
  "mime_guess",
  "regex",

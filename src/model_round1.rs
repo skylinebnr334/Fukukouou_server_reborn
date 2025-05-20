@@ -2,7 +2,7 @@ use crate::schema::round1_info;
 use crate::schema::round1_tokutendt;
 use crate::schema::round1_data;
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
+use utoipa::{IntoParams, ToSchema};
 
 #[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy,ToSchema)]
 #[diesel(table_name = round1_data)]
@@ -53,4 +53,14 @@ pub struct Round1ScoreConfigDataColumn {
 #[derive(Queryable, Deserialize, Serialize, Clone, Copy)]
 pub struct Round1NextRoundDT{
     pub current_stage:i32
+}
+
+#[derive(Deserialize, IntoParams)]
+pub struct TID{
+    id:i32
+}
+impl TID{
+    pub fn id(&self) -> i32{
+        self.id
+    }
 }

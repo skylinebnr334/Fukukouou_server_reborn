@@ -199,6 +199,7 @@ mod unit_dbtest{
         let app = test::init_service(App::new().app_data
         (Data::new(pool.clone()))
             .app_data(Data::new(ws_server.clone()))
+            .service(rootpage)
             .configure(config)
         ).await;
         let req = test::TestRequest::get().uri("/").to_request();

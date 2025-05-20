@@ -1,4 +1,12 @@
 use std::time::Instant;
+use actix::Addr;
+use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
+use actix_web_actors::ws;
+use diesel::RunQueryDsl;
+use crate::actorServer_forws::WsSession_Round1Refresh;
+use crate::{db, schema};
+use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, Round1IndexRound, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson};
+use crate::ws_actors::{Round1RefreshMessage, WsActor};
 
 pub async fn ws_route_Round1Refresh(
     req: HttpRequest,
@@ -28,9 +36,9 @@ async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
 }
 
 #[post("/Server1/set_round_data")]
-async fn postRound1Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,item:web::Json<model_round1::Round1DataColumn>)->impl Responder{
+async fn postRound1Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,item:web::Json<crate::model_round1::Round1DataColumn>)->impl Responder{
     let mut conn=db.get().unwrap();
-    let new_round_data=model_round1::Round1DataColumn{
+    let new_round_data=crate::model_round1::Round1DataColumn{
         id:item.id,
         team1:item.team1,
         team2:item.team2,
@@ -66,9 +74,9 @@ async fn get_score_settingRound1(db:web::Data<db::Pool>)->impl Responder{
 
 
 #[post("/Server1/set_score_setting")]
-async fn postScore_settingRound1(db:web::Data<db::Pool>,item:web::Json<model_round1::Round1ScoreConfigDataColumn>)->impl Responder{
+async fn postScore_settingRound1(db:web::Data<db::Pool>,item:web::Json<crate::model_round1::Round1ScoreConfigDataColumn>)->impl Responder{
     let mut conn=db.get().unwrap();
-    let new_scorecf_data=model_round1::Round1ScoreConfigDataColumn{
+    let new_scorecf_data=crate::model_round1::Round1ScoreConfigDataColumn{
         id:item.id,
         ask_throw:item.ask_throw,
         correct:item.correct,
@@ -103,9 +111,9 @@ async fn getNextRound1(db:web::Data<db::Pool>)->impl Responder{
 
 
 #[post("/Server1/next_round")]
-async fn postNextRound1(db:web::Data<db::Pool>,item:web::Json<model_round1::Round1NextRoundDT>)->impl Responder{
+async fn postNextRound1(db:web::Data<db::Pool>,item:web::Json<crate::model_round1::Round1NextRoundDT>)->impl Responder{
     let mut conn=db.get().unwrap();
-    let new_RD=model_round1::Round1IndexRound{
+    let new_RD=crate::model_round1::Round1IndexRound{
         id:0,
         current_stage:item.current_stage
     };

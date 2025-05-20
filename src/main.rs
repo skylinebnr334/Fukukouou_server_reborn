@@ -22,6 +22,7 @@ use actix_web::web::Data;
 use actix_web_actors::ws;
 use diesel::RunQueryDsl;
 use crate::actorServer_forws::{WsSession_Round1Refresh, WsSession_Round2Refresh};
+use crate::api::route::config;
 use crate::model_round1::{Round1DataColumn, Round1DataReturnStruct, Round1IndexRound, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson};
 use crate::ws_actors::{Round1RefreshMessage, WsActor};
 
@@ -87,7 +88,6 @@ async fn main()->std::io::Result<()> {
             .app_data(Data::new(ws_server.clone()))
             .service(rootpage)
             .configure(config)
-            .service(web::resource("/Server1/round1_ws").to(ws_route_Round1Refresh))
             .service(web::resource("/Server2/round2_ws").to(ws_route_Round2Refresh))
 
     )
@@ -120,8 +120,7 @@ mod unit_dbtest{
 
         let app = test::init_service(App::new().app_data
         (Data::new(pool.clone()))
-            .service(get_score_settingRound1)
-            .service(postScore_settingRound1)
+            .configure(config)
         ).await;
 
         let Round1SetScore=Round1ScoreConfigDataColumn{
@@ -154,8 +153,7 @@ mod unit_dbtest{
 
         let app = test::init_service(App::new().app_data
         (Data::new(pool.clone()))
-            .service(getNextRound1)
-            .service(postNextRound1)
+            .configure(config)
         ).await;
 
         let Round1StageeReq_1=test::TestRequest::get().uri("/Server1/next_round").to_request();
@@ -201,9 +199,7 @@ mod unit_dbtest{
         let app = test::init_service(App::new().app_data
         (Data::new(pool.clone()))
             .app_data(Data::new(ws_server.clone()))
-            .service(rootpage)
-            .service(getRoundDatasR1)
-            .service(postRound1Data)
+            .configure(config)
         ).await;
         let req = test::TestRequest::get().uri("/").to_request();
         let resp = test::call_service(&app, req).await;

@@ -158,9 +158,11 @@ mod unit_dbtest{
 
         let Round1StageeReq_1=test::TestRequest::get().uri("/Server1/next_round").to_request();
         let Round1Stageresp_1 = test::call_service(&app, Round1StageeReq_1).await;
-        let Round1ScoreResp_Soutei_1=0;
-        assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_1.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_1.to_string());
-
+        let Round1ScoreResp_Soutei_1=Round1NextRoundDT{
+                current_stage:0
+        };
+        //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_1.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_1.to_string());
+        compare_JS(Round1Stageresp_1,Round1ScoreResp_Soutei_1);
 
         let Round1SetStage=Round1NextRoundDT{
             current_stage:6
@@ -171,8 +173,11 @@ mod unit_dbtest{
         let Round1StagePostresp = test::call_service(&app, Round1StagePostReq).await;
         let Round1StageeReq_2=test::TestRequest::get().uri("/Server1/next_round").to_request();
         let Round1Stageresp_2 = test::call_service(&app, Round1StageeReq_2).await;
-        let Round1ScoreResp_Soutei_2=6;
-        assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_2.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_2.to_string());
+        let Round1ScoreResp_Soutei_2=Round1NextRoundDT{
+            current_stage:6
+        };
+        //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_2.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_2.to_string());
+        compare_JS(Round1Stageresp_2,Round1ScoreResp_Soutei_2);
 
         let Round1SetStage_3=Round1NextRoundDT{
             current_stage:-1
@@ -183,9 +188,9 @@ mod unit_dbtest{
         let Round1StagePostresp_3 = test::call_service(&app, Round1StagePostReq_3).await;
         let Round1StageeReq_3=test::TestRequest::get().uri("/Server1/next_round").to_request();
         let Round1Stageresp_3 = test::call_service(&app, Round1StageeReq_3).await;
-        let Round1ScoreResp_Soutei_3=Round1SetStage_3.current_stage;
-        assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_3.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_3.to_string());
-
+        let Round1ScoreResp_Soutei_3=Round1SetStage_3;
+        //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_3.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_3.to_string());
+        compare_JS(Round1Stageresp_3,Round1ScoreResp_Soutei_3);
 
 
     }

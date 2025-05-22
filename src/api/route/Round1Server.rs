@@ -179,6 +179,15 @@ async fn getNextRound1(db:web::Data<db::Pool>)->impl Responder{
 
 
 
+#[utoipa::path(
+    post,
+    path="/Server1/next_round",
+    request_body = Round1IndexRound,
+    responses(
+        (status = 200, description = "Register Round1 NextRound", body = SuccessReturnJson),
+        (status = 500, description = "Internal error")
+    ),
+)]
 #[post("/next_round")]
 async fn postNextRound1(db:web::Data<db::Pool>,item:web::Json<crate::model_round1::Round1NextRoundDT>)->impl Responder{
     let mut conn=db.get().unwrap();

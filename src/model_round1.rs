@@ -46,7 +46,7 @@ pub struct SuccessReturnJson{
     pub status:String
 }
 
-#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy)]
+#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy,ToSchema)]
 #[diesel(table_name = round1_info)]
 pub struct Round1IndexRound {
     pub id: i32,

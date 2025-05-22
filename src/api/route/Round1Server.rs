@@ -112,6 +112,14 @@ async fn postRound1Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,item
     )
 }
 
+#[utoipa::path(
+    get,
+    path="/Server1/score_setting",
+    responses(
+        (status = 200, description = "Get Score Setting Data", body = Round1ScoreSettingReturnStruct),
+        (status = 500, description = "Internal error")
+    ),
+)]
 #[get("/score_setting")]
 async fn get_score_settingRound1(db:web::Data<db::Pool>)->impl Responder{
 

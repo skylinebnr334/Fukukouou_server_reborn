@@ -9,6 +9,7 @@ paths(
 route::Round1Server::getRoundDatasR1, 
     route::Round1Server::getRoundDatasR1_Child,
 route::Round1Server::postRound1Data,
+route::Round1Server::get_score_settingRound1
 ),
 components(
     schemas(

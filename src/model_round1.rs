@@ -33,7 +33,7 @@ pub struct Round1DataReturnStruct_KOBETSU{
     pub result_data:Round1DataColumn,
 }
 
-#[derive(Queryable, Deserialize, Serialize)]
+#[derive(Queryable, Deserialize, Serialize, ToSchema)]
 
 pub struct Round1ScoreSettingReturnStruct{
     pub result_data:Vec<Round1ScoreConfigDataColumn>,
@@ -53,7 +53,7 @@ pub struct Round1IndexRound {
     pub current_stage : i32,
 }
 
-#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy)]
+#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy,ToSchema)]
 #[diesel(table_name = round1_tokutendt)]
 pub struct Round1ScoreConfigDataColumn {
     pub id:i32,

@@ -155,6 +155,14 @@ async fn postScore_settingRound1(db:web::Data<db::Pool>,item:web::Json<crate::mo
     )
 }
 
+#[utoipa::path(
+    get,
+    path="/Server1/next_round",
+    responses(
+        (status = 200, description = "Get Next Round Data",body = String),
+        (status = 500, description = "Internal error")
+    ),
+)]
 #[get("/next_round")]
 async fn getNextRound1(db:web::Data<db::Pool>)->impl Responder{
 

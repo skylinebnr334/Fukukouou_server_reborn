@@ -6,7 +6,7 @@ use diesel::{QueryDsl, RunQueryDsl};
 
 use crate::actorServer_forws::WsSession_Round1Refresh;
 use crate::{db, schema};
-use crate::model_round1::{ErrorMsgStruct, Round1DataColumn, Round1DataReturnStruct, Round1DataReturnStruct_KOBETSU, Round1IndexRound, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson, TID};
+use crate::model_round1::{ErrorMsgStruct, Round1DataColumn, Round1DataReturnStruct, Round1DataReturnStruct_KOBETSU, Round1IndexRound, Round1NextRoundDT, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson, TID};
 use crate::ws_actors::{Round1RefreshMessage, WsActor};
 
 pub async fn ws_route_Round1Refresh(
@@ -159,7 +159,7 @@ async fn postScore_settingRound1(db:web::Data<db::Pool>,item:web::Json<crate::mo
     get,
     path="/Server1/next_round",
     responses(
-        (status = 200, description = "Get Next Round Data",body = String),
+        (status = 200, description = "Get Next Stage Data",body = Round1NextRoundDT),
         (status = 500, description = "Internal error")
     ),
 )]
@@ -169,12 +169,15 @@ async fn getNextRound1(db:web::Data<db::Pool>)->impl Responder{
     let mut conn=db.get().unwrap();
     let rows=schema::round1_info::table
         .load::<Round1IndexRound>(&mut conn)
-        .expect("Error loading round1 Score");
+        .expect("Error loading round1 stage");
     for n in rows{
 
-        return HttpResponse::Ok().body(n.current_stage.to_string());
-    }
-    HttpResponse::Ok().body('0'.to_string())
+        return HttpResponse::Ok().json(web::Json(Round1NextRoundDT{
+            current_stage:n.current_stage
+        }))
+    }HttpResponse::Ok().json(web::Json(Round1NextRoundDT{
+        current_stage:0
+    }))
 }
 
 
@@ -182,9 +185,9 @@ async fn getNextRound1(db:web::Data<db::Pool>)->impl Responder{
 #[utoipa::path(
     post,
     path="/Server1/next_round",
-    request_body = Round1IndexRound,
+    request_body = crate::model_round1::Round1NextRoundDT,
     responses(
-        (status = 200, description = "Register Round1 NextRound", body = SuccessReturnJson),
+        (status = 200, description = "Set Round1 Next Stage", body = SuccessReturnJson),
         (status = 500, description = "Internal error")
     ),
 )]

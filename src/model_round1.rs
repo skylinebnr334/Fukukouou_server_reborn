@@ -62,7 +62,7 @@ pub struct Round1ScoreConfigDataColumn {
     pub ask_throw:i32,
 }
 
-#[derive(Queryable, Deserialize, Serialize, Clone, Copy)]
+#[derive(Queryable, Deserialize, Serialize, Clone, Copy,ToSchema)]
 pub struct Round1NextRoundDT{
     pub current_stage:i32
 }

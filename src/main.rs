@@ -110,7 +110,8 @@ mod unit_dbtest{
     use actix_web::http::StatusCode;
     use serde_json::{Value, json};
     use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-    use crate::model_round1::Round1NextRoundDT;
+    use crate::model_round1::{Round1NextRoundDT, Round1QuestionsReturnStruct, Round1QuestionsReturnStruct_KOBETSU};
+    use crate::model_round1_questions::Round1QuestionDataColumn;
 
     pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
     #[actix_web::test]
@@ -129,12 +130,12 @@ mod unit_dbtest{
             correct:1,
             ask_throw:0,
         };
-        let Round1ScorePostReq=test::TestRequest::post().uri("/Server1/set_score_setting").set_json(web::Json(
+        let Round1ScorePostReq=test::TestRequest::post().uri("/Server1/score_setting").set_json(web::Json(
             Round1SetScore.clone()
         )).to_request();
         let Round1ScorePostresp = test::call_service(&app, Round1ScorePostReq).await;
 
-        let Round1ScoreReq=test::TestRequest::get().uri("/Server1/get_score_setting").to_request();
+        let Round1ScoreReq=test::TestRequest::get().uri("/Server1/score_setting").to_request();
         let Round1Scoreresp = test::call_service(&app, Round1ScoreReq).await;
         let Round1ScoreResp_Soutei=Round1ScoreSettingReturnStruct{
             result_data:vec![Round1SetScore]
@@ -158,9 +159,11 @@ mod unit_dbtest{
 
         let Round1StageeReq_1=test::TestRequest::get().uri("/Server1/next_round").to_request();
         let Round1Stageresp_1 = test::call_service(&app, Round1StageeReq_1).await;
-        let Round1ScoreResp_Soutei_1=0;
-        assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_1.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_1.to_string());
-
+        let Round1ScoreResp_Soutei_1=Round1NextRoundDT{
+                current_stage:0
+        };
+        //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_1.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_1.to_string());
+        compare_JS(Round1Stageresp_1,Round1ScoreResp_Soutei_1);
 
         let Round1SetStage=Round1NextRoundDT{
             current_stage:6
@@ -171,8 +174,11 @@ mod unit_dbtest{
         let Round1StagePostresp = test::call_service(&app, Round1StagePostReq).await;
         let Round1StageeReq_2=test::TestRequest::get().uri("/Server1/next_round").to_request();
         let Round1Stageresp_2 = test::call_service(&app, Round1StageeReq_2).await;
-        let Round1ScoreResp_Soutei_2=6;
-        assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_2.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_2.to_string());
+        let Round1ScoreResp_Soutei_2=Round1NextRoundDT{
+            current_stage:6
+        };
+        //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_2.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_2.to_string());
+        compare_JS(Round1Stageresp_2,Round1ScoreResp_Soutei_2);
 
         let Round1SetStage_3=Round1NextRoundDT{
             current_stage:-1
@@ -183,9 +189,9 @@ mod unit_dbtest{
         let Round1StagePostresp_3 = test::call_service(&app, Round1StagePostReq_3).await;
         let Round1StageeReq_3=test::TestRequest::get().uri("/Server1/next_round").to_request();
         let Round1Stageresp_3 = test::call_service(&app, Round1StageeReq_3).await;
-        let Round1ScoreResp_Soutei_3=Round1SetStage_3.current_stage;
-        assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_3.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_3.to_string());
-
+        let Round1ScoreResp_Soutei_3=Round1SetStage_3;
+        //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_3.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_3.to_string());
+        compare_JS(Round1Stageresp_3,Round1ScoreResp_Soutei_3);
 
 
     }
@@ -217,18 +223,61 @@ mod unit_dbtest{
             team5:2,
             team6:1,
         };
-        let Round1DataPostReq=test::TestRequest::post().uri("/Server1/set_round_data").set_json(web::Json(
+        let Round1DataPostReq=test::TestRequest::post().uri("/Server1/round_datas").set_json(web::Json(
             Round1SetData.clone()
         )).to_request();
         let Round1DataPostresp = test::call_service(&app, Round1DataPostReq).await;
 
-        let Round1DataReq=test::TestRequest::get().uri("/Server1/get_round_datas").to_request();
+        let Round1DataReq=test::TestRequest::get().uri("/Server1/round_datas").to_request();
         let Round1Dataresp = test::call_service(&app, Round1DataReq).await;
         let Round1DataResp_Soutei=Round1DataReturnStruct{
             result_data:vec![Round1SetData]
         };
         compare_JS(Round1Dataresp,
                    Round1DataResp_Soutei).await;
+
+
+    }
+
+
+    #[actix_web::test]
+    async fn test_Round1QuestionData() {
+        let pool = db::establish_connection_for_test();
+        pool.get().unwrap().run_pending_migrations(MIGRATIONS);
+
+        let ws_server = WsActor::new().start();
+        let app = test::init_service(App::new().app_data
+        (Data::new(pool.clone()))
+            .app_data(Data::new(ws_server.clone()))
+            .service(rootpage)
+            .configure(config)
+        ).await;
+        let Round1QSetData=Round1QuestionDataColumn{
+            stageno:0,
+            question:"Question1".to_string(),
+            answer:"Answer1".to_string(),
+            comment:"Comment1".to_string(),
+        };
+        let Round1QDataPostReq=test::TestRequest::post().uri("/Server1/questions").set_json(web::Json(
+            Round1QSetData.clone()
+        )).to_request();
+        let Round1QDataPostresp = test::call_service(&app, Round1QDataPostReq).await;
+
+        let Round1QDataReq1=test::TestRequest::get().uri("/Server1/questions").to_request();
+        let Round1QDataresp1 = test::call_service(&app, Round1QDataReq1).await;
+        let Round1QDataResp_Soutei=Round1QuestionsReturnStruct{
+            result_data:vec![Round1QSetData.clone()]
+        };
+        let Round1QDataResp_Soutei2=Round1QuestionsReturnStruct_KOBETSU{
+            result_data:Round1QSetData
+        };
+        compare_JS(Round1QDataresp1,
+                   Round1QDataResp_Soutei).await;
+        let Round1QDataReq2=test::TestRequest::get().uri("/Server1/questions/0").to_request();
+        let Round1QDataresp2 = test::call_service(&app, Round1QDataReq2).await;
+
+        compare_JS(Round1QDataresp2,
+                   Round1QDataResp_Soutei2).await;
 
 
     }

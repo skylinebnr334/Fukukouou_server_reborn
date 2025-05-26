@@ -45,6 +45,14 @@ async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
     HttpResponse::Ok().json(web::Json(return_obj))
 }
 
+#[utoipa::path(
+    get,
+    path="/Server1/questions",
+    responses(
+        (status = 200, description = "Get Round1 Questions", body = Round1QuestionsReturnStruct),
+        (status = 500, description = "Internal error")
+    ),
+)]
 #[get("/questions")]
 async fn getRoundQuestionsR1(db:web::Data<db::Pool>)->impl Responder{
     let mut conn=db.get().unwrap();
@@ -233,6 +241,7 @@ pub fn Round1config(cfg: &mut web::ServiceConfig) {
         .service(postScore_settingRound1)
         .service(getNextRound1)
         .service(postNextRound1)
+        .service(getRoundQuestionsR1)
         .service(web::resource("/round1_ws").to(ws_route_Round1Refresh))
     );
 

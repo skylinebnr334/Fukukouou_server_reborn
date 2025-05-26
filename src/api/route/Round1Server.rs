@@ -6,7 +6,8 @@ use diesel::{QueryDsl, RunQueryDsl};
 
 use crate::actorServer_forws::WsSession_Round1Refresh;
 use crate::{db, schema};
-use crate::model_round1::{ErrorMsgStruct, Round1DataColumn, Round1DataReturnStruct, Round1DataReturnStruct_KOBETSU, Round1IndexRound, Round1NextRoundDT, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson, TID};
+use crate::model_round1::{ErrorMsgStruct, Round1DataColumn, Round1DataReturnStruct, Round1DataReturnStruct_KOBETSU, Round1IndexRound, Round1NextRoundDT, Round1QuestionsReturnStruct, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson, TID};
+use crate::model_round1_questions::Round1QuestionDataColumn;
 use crate::ws_actors::{Round1RefreshMessage, WsActor};
 
 pub async fn ws_route_Round1Refresh(
@@ -39,6 +40,19 @@ async fn getRoundDatasR1(db:web::Data<db::Pool>)->impl Responder{
         .load::<Round1DataColumn>(&mut conn)
         .expect("Error loading round1 data");
     let return_obj=Round1DataReturnStruct{
+        result_data:rows,
+    };
+    HttpResponse::Ok().json(web::Json(return_obj))
+}
+
+#[get("/questions")]
+async fn getRoundQuestionsR1(db:web::Data<db::Pool>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let rows=schema::round1_questions::table
+        .load::<Round1QuestionDataColumn>(&mut conn)
+        .expect("Error loading round1 questions");
+
+    let return_obj=Round1QuestionsReturnStruct{
         result_data:rows,
     };
     HttpResponse::Ok().json(web::Json(return_obj))

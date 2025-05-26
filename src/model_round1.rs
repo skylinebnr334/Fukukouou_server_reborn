@@ -4,6 +4,7 @@ use crate::schema::round1_data;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use utoipa::{IntoParams, ToSchema};
+use crate::model_round1_questions::Round1QuestionDataColumn;
 
 #[derive(ToSchema,Serialize,Deserialize)]
 pub struct ErrorMsgStruct{
@@ -31,6 +32,12 @@ pub struct Round1DataReturnStruct{
 
 pub struct Round1DataReturnStruct_KOBETSU{
     pub result_data:Round1DataColumn,
+}
+
+#[derive(Queryable, Deserialize, Serialize,ToSchema)]
+
+pub struct Round1QuestionsReturnStruct{
+    pub result_data:Vec<Round1QuestionDataColumn>,
 }
 
 #[derive(Queryable, Deserialize, Serialize, ToSchema)]

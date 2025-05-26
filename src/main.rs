@@ -237,6 +237,50 @@ mod unit_dbtest{
 
 
     }
+
+
+    #[actix_web::test]
+    async fn test_Round1QuestionData() {
+        let pool = db::establish_connection_for_test();
+        pool.get().unwrap().run_pending_migrations(MIGRATIONS);
+
+        let ws_server = WsActor::new().start();
+        let app = test::init_service(App::new().app_data
+        (Data::new(pool.clone()))
+            .app_data(Data::new(ws_server.clone()))
+            .service(rootpage)
+            .configure(config)
+        ).await;
+        let req = test::TestRequest::get().uri("/").to_request();
+        let resp = test::call_service(&app, req).await;
+        println!("{:?}", resp.response().body());
+
+        assert_eq!(resp.status(), StatusCode::OK);
+
+        let Round1SetData=Round1DataColumn{
+            id:0,
+            team1:1,
+            team2:2,
+            team3:0,
+            team4:1,
+            team5:2,
+            team6:1,
+        };
+        let Round1DataPostReq=test::TestRequest::post().uri("/Server1/round_datas").set_json(web::Json(
+            Round1SetData.clone()
+        )).to_request();
+        let Round1DataPostresp = test::call_service(&app, Round1DataPostReq).await;
+
+        let Round1DataReq=test::TestRequest::get().uri("/Server1/round_datas").to_request();
+        let Round1Dataresp = test::call_service(&app, Round1DataReq).await;
+        let Round1DataResp_Soutei=Round1DataReturnStruct{
+            result_data:vec![Round1SetData]
+        };
+        compare_JS(Round1Dataresp,
+                   Round1DataResp_Soutei).await;
+
+
+    }
     async fn compare_JS(res:ServiceResponse,obj:impl serde::Serialize){
         assert_eq!(
             serde_json::from_slice::<serde_json::Value>

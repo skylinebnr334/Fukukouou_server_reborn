@@ -110,7 +110,8 @@ mod unit_dbtest{
     use actix_web::http::StatusCode;
     use serde_json::{Value, json};
     use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-    use crate::model_round1::Round1NextRoundDT;
+    use crate::model_round1::{Round1NextRoundDT, Round1QuestionsReturnStruct, Round1QuestionsReturnStruct_KOBETSU};
+    use crate::model_round1_questions::Round1QuestionDataColumn;
 
     pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
     #[actix_web::test]
@@ -251,33 +252,32 @@ mod unit_dbtest{
             .service(rootpage)
             .configure(config)
         ).await;
-        let req = test::TestRequest::get().uri("/").to_request();
-        let resp = test::call_service(&app, req).await;
-        println!("{:?}", resp.response().body());
-
-        assert_eq!(resp.status(), StatusCode::OK);
-
-        let Round1SetData=Round1DataColumn{
-            id:0,
-            team1:1,
-            team2:2,
-            team3:0,
-            team4:1,
-            team5:2,
-            team6:1,
+        let Round1QSetData=Round1QuestionDataColumn{
+            stageno:0,
+            question:"Question1".to_string(),
+            answer:"Answer1".to_string(),
+            comment:"Comment1".to_string(),
         };
-        let Round1DataPostReq=test::TestRequest::post().uri("/Server1/round_datas").set_json(web::Json(
-            Round1SetData.clone()
+        let Round1QDataPostReq=test::TestRequest::post().uri("/Server1/questions").set_json(web::Json(
+            Round1QSetData.clone()
         )).to_request();
-        let Round1DataPostresp = test::call_service(&app, Round1DataPostReq).await;
+        let Round1QDataPostresp = test::call_service(&app, Round1QDataPostReq).await;
 
-        let Round1DataReq=test::TestRequest::get().uri("/Server1/round_datas").to_request();
-        let Round1Dataresp = test::call_service(&app, Round1DataReq).await;
-        let Round1DataResp_Soutei=Round1DataReturnStruct{
-            result_data:vec![Round1SetData]
+        let Round1QDataReq1=test::TestRequest::get().uri("/Server1/questions").to_request();
+        let Round1QDataresp1 = test::call_service(&app, Round1QDataReq1).await;
+        let Round1QDataResp_Soutei=Round1QuestionsReturnStruct{
+            result_data:vec![Round1QSetData.clone()]
         };
-        compare_JS(Round1Dataresp,
-                   Round1DataResp_Soutei).await;
+        let Round1QDataResp_Soutei2=Round1QuestionsReturnStruct_KOBETSU{
+            result_data:Round1QSetData
+        };
+        compare_JS(Round1QDataresp1,
+                   Round1QDataResp_Soutei).await;
+        let Round1QDataReq2=test::TestRequest::get().uri("/Server1/questions/0").to_request();
+        let Round1QDataresp2 = test::call_service(&app, Round1QDataReq2).await;
+
+        compare_JS(Round1QDataresp2,
+                   Round1QDataResp_Soutei2).await;
 
 
     }

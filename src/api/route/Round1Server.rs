@@ -99,6 +99,36 @@ async fn getRoundQuestionsR1_Child(db:web::Data<db::Pool>,
 }
 
 
+#[utoipa::path(
+    post,
+    path="/Server1/questions",
+    request_body = Round1QuestionDataColumn,
+    responses(
+        (status = 200, description = "Register Round1 ScoreData", body = SuccessReturnJson),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[post("/questions")]
+async fn postRoundQuestionsR1(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,item:web::Json<crate::model_round1_questions::Round1QuestionDataColumn>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let new_round_data=crate::model_round1_questions::Round1QuestionDataColumn{
+        stageno: item.stageno,
+        answer: item.answer.clone(),
+        question: item.question.clone(),
+        comment: item.comment.clone(),
+    };
+    diesel::replace_into(schema::round1_questions::dsl::round1_questions)
+        .values(&new_round_data)
+        .execute(&mut conn)
+        .expect("Error creating Round1 Questions");
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
+
+
 
 
 #[utoipa::path(
@@ -277,6 +307,7 @@ pub fn Round1config(cfg: &mut web::ServiceConfig) {
         .service(postNextRound1)
         .service(getRoundQuestionsR1)
         .service(getRoundQuestionsR1_Child)
+        .service(postRoundQuestionsR1)
         .service(web::resource("/round1_ws").to(ws_route_Round1Refresh))
     );
 

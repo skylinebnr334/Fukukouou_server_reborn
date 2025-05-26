@@ -39,6 +39,12 @@ pub struct Round1DataReturnStruct_KOBETSU{
 pub struct Round1QuestionsReturnStruct{
     pub result_data:Vec<Round1QuestionDataColumn>,
 }
+#[derive(Queryable, Deserialize, Serialize,ToSchema)]
+
+pub struct Round1QuestionsReturnStruct_KOBETSU{
+    pub result_data:Round1QuestionDataColumn,
+}
+
 
 #[derive(Queryable, Deserialize, Serialize, ToSchema)]
 

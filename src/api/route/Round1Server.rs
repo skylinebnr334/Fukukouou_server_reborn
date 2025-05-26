@@ -6,7 +6,7 @@ use diesel::{QueryDsl, RunQueryDsl};
 
 use crate::actorServer_forws::WsSession_Round1Refresh;
 use crate::{db, schema};
-use crate::model_round1::{ErrorMsgStruct, Round1DataColumn, Round1DataReturnStruct, Round1DataReturnStruct_KOBETSU, Round1IndexRound, Round1NextRoundDT, Round1QuestionsReturnStruct, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson, TID};
+use crate::model_round1::{ErrorMsgStruct, Round1DataColumn, Round1DataReturnStruct, Round1DataReturnStruct_KOBETSU, Round1IndexRound, Round1NextRoundDT, Round1QuestionsReturnStruct, Round1QuestionsReturnStruct_KOBETSU, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson, TID};
 use crate::model_round1_questions::Round1QuestionDataColumn;
 use crate::ws_actors::{Round1RefreshMessage, WsActor};
 
@@ -65,6 +65,40 @@ async fn getRoundQuestionsR1(db:web::Data<db::Pool>)->impl Responder{
     };
     HttpResponse::Ok().json(web::Json(return_obj))
 }
+#[utoipa::path(
+    get,
+    params(TID),
+    path="/Server1/questions/{id}",
+    responses(
+        (status = 200, description = "Get Round1 Question Data", body = Round1QuestionsReturnStruct_KOBETSU),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[get("/questions/{id}")]
+async fn getRoundQuestionsR1_Child(db:web::Data<db::Pool>,
+                               req:web::Path<TID>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let Result_DT=schema::round1_questions::table
+        .find(req.id)
+        .first::<Round1QuestionDataColumn>(&mut conn);
+    match Result_DT{
+        Ok(dt)=>{
+
+            let return_obj=Round1QuestionsReturnStruct_KOBETSU{
+                result_data:dt
+            };
+            HttpResponse::Ok().json(web::Json(return_obj))
+        }
+        Err(err)=>{
+            HttpResponse::InternalServerError().json(web::Json(ErrorMsgStruct{
+                error_shortmsg:"DB Error".parse().unwrap(),
+                error_msg:err.to_string()
+            }))
+        }
+    }
+}
+
+
 
 
 #[utoipa::path(
@@ -242,6 +276,7 @@ pub fn Round1config(cfg: &mut web::ServiceConfig) {
         .service(getNextRound1)
         .service(postNextRound1)
         .service(getRoundQuestionsR1)
+        .service(getRoundQuestionsR1_Child)
         .service(web::resource("/round1_ws").to(ws_route_Round1Refresh))
     );
 

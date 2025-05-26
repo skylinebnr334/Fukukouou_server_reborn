@@ -13,6 +13,7 @@ route::Round1Server::get_score_settingRound1,
 route::Round1Server::getNextRound1,
 route::Round1Server::postNextRound1,
 route::Round1Server::getRoundQuestionsR1,
+    route::Round1Server::getRoundQuestionsR1_Child,
 ),
 components(
     schemas(

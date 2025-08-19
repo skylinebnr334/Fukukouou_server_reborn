@@ -29,6 +29,16 @@ async fn getRoundDatasR2(db:web::Data<db::Pool>)->impl Responder{
     HttpResponse::Ok().json(web::Json(return_obj))
 }
 
+
+#[utoipa::path(
+    post,
+    path="/Server2/round_datas",
+    request_body = Round2DataColumn,
+    responses(
+        (status = 200, description = "Register Round2 ScoreData", body = SuccessReturnJson),
+        (status = 500, description = "Internal error")
+    ),
+)]
 #[post("/round_datas")]
 async fn postRound2Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>, item:web::Json<crate::model_round2::Round2DataColumn>)->impl Responder{
     let mut conn=db.get().unwrap();

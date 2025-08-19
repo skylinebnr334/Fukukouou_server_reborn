@@ -26,3 +26,8 @@ async fn getRoundDatasR2(db:web::Data<db::Pool>)->impl Responder{
     };
     HttpResponse::Ok().json(web::Json(return_obj))
 }
+pub fn Round2Config(cfg: &mut web::ServiceConfig){
+
+    cfg.service(web::scope("/Server2")
+                    .service(getRoundDatasR2));
+}

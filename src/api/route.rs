@@ -29,7 +29,8 @@ struct Api_Doc;
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.configure(
         Round1Server::Round1config
-    ).service(
+    ).configure(Round2Server::Round2Config)
+        .service(
         SwaggerUi::new("/swagger-ui/{_:.*}")
             .url("/api-doc/openapi.json", Api_Doc::openapi()),
     );

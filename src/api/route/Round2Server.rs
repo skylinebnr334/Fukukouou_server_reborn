@@ -6,6 +6,8 @@ use crate::{db, schema};
 use crate::model_round2::{Round2DataColumn, Round2DataReturnStruct};
 
 use diesel::{QueryDsl, RunQueryDsl};
+use crate::model_round1::SuccessReturnJson;
+use crate::ws_actors::WsActor;
 
 #[utoipa::path(
     get,
@@ -26,8 +28,29 @@ async fn getRoundDatasR2(db:web::Data<db::Pool>)->impl Responder{
     };
     HttpResponse::Ok().json(web::Json(return_obj))
 }
+
+#[post("/round_datas")]
+async fn postRound2Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>, item:web::Json<crate::model_round2::Round2DataColumn>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let new_data=crate::model_round2::Round2DataColumn{
+        team_id: item.team_id,
+        current_phase: item.current_phase,
+        latest_down_num: item.latest_down_num,
+        miss_timing: item.miss_timing,
+    };
+    diesel::replace_into(schema::round2_data::dsl::round2_data)
+        .values(&new_data)
+        .execute(&mut conn)
+        .expect("Error creating Round1 data");
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
 pub fn Round2Config(cfg: &mut web::ServiceConfig){
 
     cfg.service(web::scope("/Server2")
-                    .service(getRoundDatasR2));
+                    .service(getRoundDatasR2)
+                    .service(postRound2Data));
 }

@@ -18,6 +18,7 @@ route::Round1Server::getRoundQuestionsR1,
     route::Round1Server::getRoundQuestionsR1_Child,
 route::Round1Server::postRoundQuestionsR1,
     route::Round2Server::getRoundDatasR2,
+route::Round2Server::postRound2Data,
 ),
 components(
     schemas(

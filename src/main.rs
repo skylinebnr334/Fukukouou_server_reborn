@@ -16,6 +16,7 @@ mod db;
 mod ws_actors;
 mod actorServer_forws;
 mod api;
+mod model_round2;
 
 use actix_web::{get, middleware, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use actix_web::web::Data;

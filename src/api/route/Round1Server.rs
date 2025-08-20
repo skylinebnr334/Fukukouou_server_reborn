@@ -136,7 +136,7 @@ async fn postRoundQuestionsR1(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>
     params(TID),
     path="/Server1/round_datas/{id}",
     responses(
-        (status = 200, description = "Get Round1 Data", body = Round1DataReturnStruct_KOBETSU),
+        (status = 200, description = "Get Round1 Data", body = Round1DataColumn),
         (status = 500, description = "Internal error")
     ),
 )]
@@ -150,9 +150,7 @@ req:web::Path<TID>)->impl Responder{
     match Result_DT{
         Ok(dt)=>{
 
-            let return_obj=Round1DataReturnStruct_KOBETSU{
-                result_data:dt
-            };
+            let return_obj=dt;
             HttpResponse::Ok().json(web::Json(return_obj))
         }
         Err(err)=>{

@@ -15,3 +15,7 @@ pub struct Round2DataColumn{
 pub struct Round2DataReturnStruct{
     pub result_data:Vec<Round2DataColumn>,
 }
+#[derive(Queryable, Deserialize, Serialize,ToSchema)]
+pub struct Round2DataReturnStruct_KOBETSU{
+    pub result_data:Round2DataColumn,
+}

@@ -3,7 +3,7 @@ use actix::Addr;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use actix_web_actors::ws;
 use crate::{db, schema};
-use crate::model_round2::{Round2DataColumn, Round2DataReturnStruct, Round2DataReturnStruct_KOBETSU};
+use crate::model_round2::{Round2DataColumn, Round2DataReturnStruct, Round2DataReturnStruct_KOBETSU, Round2IndexRound, Round2NextRoundDT};
 
 use diesel::{QueryDsl, RunQueryDsl};
 use crate::model_round1::{ErrorMsgStruct, SuccessReturnJson, TID};
@@ -88,10 +88,36 @@ async fn get_round2data_by_id(db:web::Data<db::Pool>,
         }
     }
 }
+#[utoipa::path(
+    get,
+    path="/Server2/next_round",
+    responses(
+        (status = 200, description = "Get Next Stage Data",body = Round2NextRoundDT),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[get("/next_round")]
+async fn getNextRound2(db:web::Data<db::Pool>)->impl Responder{
+
+    let mut conn=db.get().unwrap();
+    let rows=schema::round1_info::table
+        .load::<Round2IndexRound>(&mut conn)
+        .expect("Error loading round1 stage");
+    for n in rows{
+
+        return HttpResponse::Ok().json(web::Json(Round2NextRoundDT{
+            current_num:n.current_num
+        }))
+    }HttpResponse::Ok().json(web::Json(Round2NextRoundDT{
+        current_num:0
+    }))
+}
+
 pub fn Round2Config(cfg: &mut web::ServiceConfig){
 
     cfg.service(web::scope("/Server2")
                     .service(getRoundDatasR2)
                     .service(postRound2Data)
-    .service(get_round2data_by_id));
+    .service(get_round2data_by_id)
+        .service(getNextRound2));
 }

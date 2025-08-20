@@ -1,4 +1,5 @@
 use crate::schema::round2_data;
+use crate::schema::round2_info;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -18,4 +19,15 @@ pub struct Round2DataReturnStruct{
 #[derive(Queryable, Deserialize, Serialize,ToSchema)]
 pub struct Round2DataReturnStruct_KOBETSU{
     pub result_data:Round2DataColumn,
+}
+#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy,ToSchema)]
+#[diesel(table_name = round2_info)]
+pub struct Round2IndexRound {
+    pub id: i32,
+    pub current_num: i32,
+}
+#[derive(Queryable, Deserialize, Serialize, Clone, Copy,ToSchema)]
+
+pub struct Round2NextRoundDT{
+    pub current_num:i32
 }

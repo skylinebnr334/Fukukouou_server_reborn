@@ -113,6 +113,7 @@ mod unit_dbtest{
     use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
     use crate::model_round1::{Round1NextRoundDT, Round1QuestionsReturnStruct, Round1QuestionsReturnStruct_KOBETSU};
     use crate::model_round1_questions::Round1QuestionDataColumn;
+    use crate::model_round2::{Round2DataColumn, Round2DataReturnStruct};
 
     pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
     #[actix_web::test]
@@ -282,6 +283,62 @@ mod unit_dbtest{
 
 
     }
+
+    #[actix_web::test]
+    async fn test_Round2Data() {
+        let pool = db::establish_connection_for_test();
+        pool.get().unwrap().run_pending_migrations(MIGRATIONS);
+
+        let ws_server = WsActor::new().start();
+        let app = test::init_service(App::new().app_data
+        (Data::new(pool.clone()))
+            .app_data(Data::new(ws_server.clone()))
+            .service(rootpage)
+            .configure(config)
+        ).await;
+        let req = test::TestRequest::get().uri("/").to_request();
+        let resp = test::call_service(&app, req).await;
+        println!("{:?}", resp.response().body());
+
+        assert_eq!(resp.status(), StatusCode::OK);
+
+        let Round2SetData=Round2DataColumn{
+            team_id:0,
+            current_phase:2,
+            latest_down_num:1,
+            miss_timing:0,
+        };
+        let Round2DataPostReq=test::TestRequest::post().uri("/Server2/round_datas").set_json(web::Json(
+            Round2SetData.clone()
+        )).to_request();
+        let Round2DataPostresp= test::call_service(&app, Round2DataPostReq).await;
+
+
+        let Round2SetData_2=Round2DataColumn{
+            team_id:1,
+            current_phase:3,
+            latest_down_num:2,
+            miss_timing:2,
+        };
+        let Round2DataPostReq_2=test::TestRequest::post().uri("/Server2/round_datas").set_json(web::Json(
+            Round2SetData_2.clone()
+        )).to_request();
+        let Round2DataPostresp_2= test::call_service(&app, Round2DataPostReq_2).await;
+        let Round2DataReq=test::TestRequest::get().uri("/Server2/round_datas").to_request();
+        let Round2Dataresp=test::call_service(&app, Round2DataReq).await;
+        let Round2DataResp_Soutei=Round2DataReturnStruct{
+            result_data:vec![Round2SetData,Round2SetData_2.clone()]
+        };
+        compare_JS(Round2Dataresp,
+                   Round2DataResp_Soutei).await;
+        let Round2_KobetuDataReq=test::TestRequest::get().uri("/Server2/round_datas/1").to_request();
+        let Round2_KobetuDataresp=test::call_service(&app, Round2_KobetuDataReq).await;
+        let Round2_KobetuDataResp_Soutei=Round2SetData_2;
+        compare_JS(Round2_KobetuDataresp,
+                   Round2_KobetuDataResp_Soutei).await;
+
+    }
+
     async fn compare_JS(res:ServiceResponse,obj:impl serde::Serialize){
         assert_eq!(
             serde_json::from_slice::<serde_json::Value>

@@ -6,7 +6,7 @@ use crate::{db, schema};
 use crate::model_round2::{Round2DataColumn, Round2DataReturnStruct};
 
 use diesel::{QueryDsl, RunQueryDsl};
-use crate::model_round1::SuccessReturnJson;
+use crate::model_round1::{ErrorMsgStruct, SuccessReturnJson, TID};
 use crate::ws_actors::WsActor;
 
 #[utoipa::path(
@@ -58,9 +58,20 @@ async fn postRound2Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>, ite
         })
     )
 }
+#[get("/round_datas/{id}")]
+async fn get_round2data_by_id(db:web::Data<db::Pool>,
+                              req:web::Path<TID>) ->impl Responder{
+    let mut conn=db.get().unwrap();
+
+    HttpResponse::InternalServerError().json(web::Json(ErrorMsgStruct{
+        error_shortmsg:"DB Error".parse().unwrap(),
+        error_msg:"None".to_string()
+    }))
+}
 pub fn Round2Config(cfg: &mut web::ServiceConfig){
 
     cfg.service(web::scope("/Server2")
                     .service(getRoundDatasR2)
-                    .service(postRound2Data));
+                    .service(postRound2Data)
+    .service(get_round2data_by_id));
 }

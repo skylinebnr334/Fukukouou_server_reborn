@@ -5,6 +5,7 @@ use log::Level;
 use std::env;
 use std::time::Instant;
 use actix::{Actor, Addr};
+use actix_cors::Cors;
 
 #[macro_use]
 extern crate diesel;
@@ -84,7 +85,12 @@ async fn main()->std::io::Result<()> {
     )*/
     HttpServer::new(move ||
         App::new()
-            .wrap(Cors::default)
+            .wrap(Cors::default()
+                .allowed_origin("http://localhost:5173")
+                .allowed_methods(vec!["GET", "POST"])
+                .allowed_headers(vec![actix_web::http::header::CONTENT_TYPE, actix_web::http::header::AUTHORIZATION])
+                .supports_credentials()
+                .max_age(3600))
             .wrap(middleware::Logger::default())
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(ws_server.clone()))

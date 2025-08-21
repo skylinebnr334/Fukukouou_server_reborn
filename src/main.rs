@@ -84,6 +84,7 @@ async fn main()->std::io::Result<()> {
     )*/
     HttpServer::new(move ||
         App::new()
+            .wrap(Cors::default)
             .wrap(middleware::Logger::default())
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(ws_server.clone()))

@@ -2,6 +2,7 @@
 CREATE TABLE round1_info (
     id INTEGER UNIQUE NOT NULL UNIQUE,
     current_stage INTEGER NOT NULL DEFAULT 0,
+    current_question INTEGER NOT NULL DEFAULT -13,
     PRIMARY KEY (id)
 );
 CREATE TABLE round1_data (
@@ -22,3 +23,7 @@ CREATE TABLE round1_tokutendt
     ask_throw INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (id)
 );
+CREATE TABLE round1_used_question (
+                             id INTEGER UNIQUE NOT NULL UNIQUE,
+    PRIMARY KEY (id)
+                                  );

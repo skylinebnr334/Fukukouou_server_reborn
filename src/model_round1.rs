@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use utoipa::{IntoParams, ToSchema};
 use crate::model_round1_questions::Round1QuestionDataColumn;
+use crate::schema::round1_used_question;
 
 #[derive(ToSchema,Serialize,Deserialize)]
 pub struct ErrorMsgStruct{
@@ -64,6 +65,7 @@ pub struct SuccessReturnJson{
 pub struct Round1IndexRound {
     pub id: i32,
     pub current_stage : i32,
+    pub current_question:i32
 }
 
 #[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy,ToSchema)]
@@ -74,10 +76,15 @@ pub struct Round1ScoreConfigDataColumn {
     pub miss:i32,
     pub ask_throw:i32,
 }
-
+#[derive(Queryable, Insertable, Deserialize, Serialize, Clone, Copy,ToSchema)]
+#[diesel(table_name = round1_used_question)]
+pub struct Round1UsedQuestions{
+    pub id:i32
+}
 #[derive(Queryable, Deserialize, Serialize, Clone, Copy,ToSchema)]
 pub struct Round1NextRoundDT{
-    pub current_stage:i32
+    pub current_stage:i32,
+    pub current_question: i32
 }
 
 #[derive(Deserialize, IntoParams)]

@@ -22,6 +22,8 @@ route::Round2Server::postRound2Data,
 route::Round2Server::getNextRound2,
 route::Round2Server::postNextRound2,
     route::Round2Server::get_round2data_by_id,
+route::Round1Server::getRound1UsedQuestions,
+route::Round1Server::postRound1UsedQuestion
 ),
 components(
     schemas(

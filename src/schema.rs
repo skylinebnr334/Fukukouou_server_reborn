@@ -16,6 +16,7 @@ diesel::table! {
     round1_info (id) {
         id -> Integer,
         current_stage -> Integer,
+        current_question -> Integer,
     }
 }
 
@@ -34,6 +35,12 @@ diesel::table! {
         correct -> Integer,
         miss -> Integer,
         ask_throw -> Integer,
+    }
+}
+
+diesel::table! {
+    round1_used_question (id) {
+        id -> Integer,
     }
 }
 
@@ -58,6 +65,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     round1_info,
     round1_questions,
     round1_tokutendt,
+    round1_used_question,
     round2_data,
     round2_info,
 );

@@ -6,7 +6,7 @@ use diesel::{QueryDsl, RunQueryDsl};
 
 use crate::actorServer_forws::WsSession_Round1Refresh;
 use crate::{db, schema};
-use crate::model_round1::{ErrorMsgStruct, Round1DataColumn, Round1DataReturnStruct, Round1DataReturnStruct_KOBETSU, Round1IndexRound, Round1NextRoundDT, Round1QuestionsReturnStruct, Round1QuestionsReturnStruct_KOBETSU, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, SuccessReturnJson, TID};
+use crate::model_round1::{ErrorMsgStruct, Round1DataColumn, Round1DataReturnStruct, Round1DataReturnStruct_KOBETSU, Round1IndexRound, Round1NextRoundDT, Round1QuestionsReturnStruct, Round1QuestionsReturnStruct_KOBETSU, Round1ScoreConfigDataColumn, Round1ScoreSettingReturnStruct, Round1UsedQuestions, SuccessReturnJson, TID};
 use crate::model_round1_questions::Round1QuestionDataColumn;
 use crate::ws_actors::{Round1RefreshMessage, WsActor};
 
@@ -257,10 +257,12 @@ async fn getNextRound1(db:web::Data<db::Pool>)->impl Responder{
     for n in rows{
 
         return HttpResponse::Ok().json(web::Json(Round1NextRoundDT{
-            current_stage:n.current_stage
+            current_stage:n.current_stage,
+            current_question:n.current_question,
         }))
     }HttpResponse::Ok().json(web::Json(Round1NextRoundDT{
-        current_stage:0
+        current_stage:0,
+        current_question:-1,
     }))
 }
 
@@ -280,7 +282,8 @@ async fn postNextRound1(db:web::Data<db::Pool>,item:web::Json<crate::model_round
     let mut conn=db.get().unwrap();
     let new_RD=crate::model_round1::Round1IndexRound{
         id:0,
-        current_stage:item.current_stage
+        current_stage:item.current_stage,
+        current_question:item.current_question
     };
     diesel::replace_into(schema::round1_info::dsl::round1_info)
         .values(&new_RD)
@@ -293,6 +296,49 @@ async fn postNextRound1(db:web::Data<db::Pool>,item:web::Json<crate::model_round
     )
 }
 
+#[utoipa::path(
+    get,
+    path="/Server1/used_questions",
+    responses(
+        (status = 200, description = "Get Used Questions  Data",body = Vec<Round1UsedQuestions>),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[get("/used_questions")]
+async fn getRound1UsedQuestions(db:web::Data<db::Pool>)->impl Responder{
+
+    let mut conn=db.get().unwrap();
+    let rows=schema::round1_used_question::table
+        .load::<Round1UsedQuestions>(&mut conn)
+        .expect("Error loading round1 used questions");
+
+    HttpResponse::Ok().json(web::Json(rows))
+}
+#[utoipa::path(
+    post,
+    path="/Server1/used_questions",
+    request_body = crate::model_round1::Round1UsedQuestions,
+    responses(
+        (status = 200, description = "Set Round1 Used Questions", body = SuccessReturnJson),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[post("/used_questions")]
+async fn postRound1UsedQuestion(db:web::Data<db::Pool>,item:web::Json<crate::model_round1::Round1UsedQuestions>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let new_RD=crate::model_round1::Round1UsedQuestions{
+        id:item.id
+    };
+    diesel::replace_into(schema::round1_used_question::dsl::round1_used_question)
+        .values(&new_RD)
+        .execute(&mut conn)
+        .expect("Error creating Round1 Used questions");
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
 
 pub fn Round1config(cfg: &mut web::ServiceConfig) {
     cfg.service(web::scope("/Server1")
@@ -306,6 +352,8 @@ pub fn Round1config(cfg: &mut web::ServiceConfig) {
         .service(getRoundQuestionsR1)
         .service(getRoundQuestionsR1_Child)
         .service(postRoundQuestionsR1)
+        .service(getRound1UsedQuestions)
+        .service(postRound1UsedQuestion)
         .service(web::resource("/round1_ws").to(ws_route_Round1Refresh))
     );
 

@@ -117,7 +117,7 @@ async fn get_round2data_by_id(db:web::Data<db::Pool>,
 async fn getNextRound2(db:web::Data<db::Pool>)->impl Responder{
 
     let mut conn=db.get().unwrap();
-    let rows=schema::round1_info::table
+    let rows=schema::round2_info::table
         .load::<Round2IndexRound>(&mut conn)
         .expect("Error loading round2 stage");
     for n in rows{

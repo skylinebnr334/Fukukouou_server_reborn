@@ -169,13 +169,15 @@ mod unit_dbtest{
         let Round1StageeReq_1=test::TestRequest::get().uri("/Server1/next_round").to_request();
         let Round1Stageresp_1 = test::call_service(&app, Round1StageeReq_1).await;
         let Round1ScoreResp_Soutei_1=Round1NextRoundDT{
-                current_stage:0
+                current_stage:0,
+            current_question:6,
         };
         //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_1.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_1.to_string());
         compare_JS(Round1Stageresp_1,Round1ScoreResp_Soutei_1);
 
         let Round1SetStage=Round1NextRoundDT{
-            current_stage:6
+            current_stage:6,
+            current_question:6,
         };
         let Round1StagePostReq=test::TestRequest::post().uri("/Server1/next_round").set_json(web::Json(
             Round1SetStage.clone()
@@ -184,13 +186,15 @@ mod unit_dbtest{
         let Round1StageeReq_2=test::TestRequest::get().uri("/Server1/next_round").to_request();
         let Round1Stageresp_2 = test::call_service(&app, Round1StageeReq_2).await;
         let Round1ScoreResp_Soutei_2=Round1NextRoundDT{
-            current_stage:6
+            current_stage:6,
+            current_question:6,
         };
         //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_2.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_2.to_string());
         compare_JS(Round1Stageresp_2,Round1ScoreResp_Soutei_2);
 
         let Round1SetStage_3=Round1NextRoundDT{
-            current_stage:-1
+            current_stage:-1,
+            current_question:6,
         };
         let Round1StagePostReq_3=test::TestRequest::post().uri("/Server1/next_round").set_json(web::Json(
             Round1SetStage_3.clone()

@@ -113,7 +113,7 @@ mod unit_dbtest{
     use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
     use crate::model_round1::{Round1NextRoundDT, Round1QuestionsReturnStruct, Round1QuestionsReturnStruct_KOBETSU};
     use crate::model_round1_questions::Round1QuestionDataColumn;
-    use crate::model_round2::{Round2DataColumn, Round2DataReturnStruct};
+    use crate::model_round2::{Round2DataColumn, Round2DataReturnStruct, Round2NextRoundDT};
 
     pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
     #[actix_web::test]
@@ -194,6 +194,56 @@ mod unit_dbtest{
         let Round1ScoreResp_Soutei_3=Round1SetStage_3;
         //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_3.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_3.to_string());
         compare_JS(Round1Stageresp_3,Round1ScoreResp_Soutei_3);
+
+
+    }
+
+
+    #[actix_web::test]
+    async fn test_Round2StageInfo() {
+        let pool = db::establish_connection_for_test();
+        pool.get().unwrap().run_pending_migrations(MIGRATIONS);
+
+        let app = test::init_service(App::new().app_data
+        (Data::new(pool.clone()))
+            .configure(config)
+        ).await;
+
+        let Round2StageeReq_1=test::TestRequest::get().uri("/Server2/next_round").to_request();
+        let Round2Stageresp_1 = test::call_service(&app, Round2StageeReq_1).await;
+        let Round2ScoreResp_Soutei_1=Round2NextRoundDT{
+            current_num:0
+        };
+        //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_1.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_1.to_string());
+        compare_JS(Round2Stageresp_1,Round2ScoreResp_Soutei_1);
+
+        let Round2SetStage=Round2NextRoundDT{
+            current_num:6
+        };
+        let Round2StagePostReq=test::TestRequest::post().uri("/Server2/next_round").set_json(web::Json(
+            Round2SetStage.clone()
+        )).to_request();
+        let Round2StagePostresp = test::call_service(&app, Round2StagePostReq).await;
+        let Round2StageeReq_2=test::TestRequest::get().uri("/Server2/next_round").to_request();
+        let Round2Stageresp_2 = test::call_service(&app, Round2StageeReq_2).await;
+        let Round2ScoreResp_Soutei_2=Round2NextRoundDT{
+            current_num:6
+        };
+        //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_2.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_2.to_string());
+        compare_JS(Round2Stageresp_2,Round2ScoreResp_Soutei_2);
+
+        let Round2SetStage_3=Round2NextRoundDT{
+            current_num:-1
+        };
+        let Round2StagePostReq_3=test::TestRequest::post().uri("/Server2/next_round").set_json(web::Json(
+            Round2SetStage_3.clone()
+        )).to_request();
+        let Round2StagePostresp_3 = test::call_service(&app, Round2StagePostReq_3).await;
+        let Round2StageeReq_3=test::TestRequest::get().uri("/Server2/next_round").to_request();
+        let Round2Stageresp_3 = test::call_service(&app, Round2StageeReq_3).await;
+        let Round2ScoreResp_Soutei_3=Round2SetStage_3;
+        //assert_eq!(String::from_utf8(to_bytes(Round1Stageresp_3.into_body()).await.unwrap().to_vec()).unwrap(),Round1ScoreResp_Soutei_3.to_string());
+        compare_JS(Round2Stageresp_3,Round2ScoreResp_Soutei_3);
 
 
     }

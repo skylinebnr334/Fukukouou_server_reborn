@@ -102,7 +102,7 @@ async fn getNextRound2(db:web::Data<db::Pool>)->impl Responder{
     let mut conn=db.get().unwrap();
     let rows=schema::round1_info::table
         .load::<Round2IndexRound>(&mut conn)
-        .expect("Error loading round1 stage");
+        .expect("Error loading round2 stage");
     for n in rows{
 
         return HttpResponse::Ok().json(web::Json(Round2NextRoundDT{
@@ -112,12 +112,38 @@ async fn getNextRound2(db:web::Data<db::Pool>)->impl Responder{
         current_num:0
     }))
 }
-
+#[utoipa::path(
+    post,
+    path="/Server2/next_round",
+    request_body = crate::model_round2::Round2NextRoundDT,
+    responses(
+        (status = 200, description = "Set Round2 Next Stage", body = SuccessReturnJson),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[post("/next_round")]
+async fn postNextRound2(db:web::Data<db::Pool>,req:web::Json<Round2NextRoundDT>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let new_data=Round2IndexRound{
+        id:0,
+        current_num:req.current_num,
+    };
+    diesel::replace_into(schema::round2_info::dsl::round2_info)
+        .values(&new_data)
+        .execute(&mut conn)
+        .expect("Error creating Round2 data");
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
 pub fn Round2Config(cfg: &mut web::ServiceConfig){
 
     cfg.service(web::scope("/Server2")
                     .service(getRoundDatasR2)
                     .service(postRound2Data)
     .service(get_round2data_by_id)
-        .service(getNextRound2));
+        .service(getNextRound2)
+        .service(postNextRound2));
 }

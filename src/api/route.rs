@@ -19,6 +19,8 @@ route::Round1Server::getRoundQuestionsR1,
 route::Round1Server::postRoundQuestionsR1,
     route::Round2Server::getRoundDatasR2,
 route::Round2Server::postRound2Data,
+route::Round2Server::getNextRound2,
+route::Round2Server::postNextRound2,
 ),
 components(
     schemas(

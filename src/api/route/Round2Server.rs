@@ -1,4 +1,4 @@
-
+use std::time::Instant;
 use actix::Addr;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use actix_web_actors::ws;
@@ -6,9 +6,25 @@ use crate::{db, schema};
 use crate::model_round2::{Round2DataColumn, Round2DataReturnStruct, Round2DataReturnStruct_KOBETSU, Round2IndexRound, Round2NextRoundDT};
 
 use diesel::{QueryDsl, RunQueryDsl};
+use crate::actorServer_forws::{WsSession_Round2Refresh};
 use crate::model_round1::{ErrorMsgStruct, SuccessReturnJson, TID};
-use crate::ws_actors::WsActor;
+use crate::ws_actors::{Round2RefreshMessage, WsActor};
 
+pub async fn ws_route_Round2Refresh(
+    req: HttpRequest,
+    stream: web::Payload,
+    srv:web::Data<Addr<WsActor>>,
+)->Result<HttpResponse,actix_web::Error> {
+    ws::start(
+        WsSession_Round2Refresh{
+            id:0,
+            hb:Instant::now(),
+            addr:srv.get_ref().clone(),
+        },
+        &req,
+        stream
+    )
+}
 #[utoipa::path(
     get,
     path="/Server2/round_datas",
@@ -52,6 +68,7 @@ async fn postRound2Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>, ite
         .values(&new_data)
         .execute(&mut conn)
         .expect("Error creating Round1 data");
+    srv.get_ref().do_send(Round2RefreshMessage {msg:"refresh".parse().unwrap() });
     HttpResponse::Ok().json(
         web::Json(SuccessReturnJson{
             status:"success".to_string()
@@ -145,5 +162,6 @@ pub fn Round2Config(cfg: &mut web::ServiceConfig){
                     .service(postRound2Data)
     .service(get_round2data_by_id)
         .service(getNextRound2)
-        .service(postNextRound2));
+        .service(postNextRound2)
+                    .service(web::resource("/round2_ws").to(ws_route_Round2Refresh)));
 }

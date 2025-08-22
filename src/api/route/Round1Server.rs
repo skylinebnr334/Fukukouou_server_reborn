@@ -289,6 +289,8 @@ async fn postNextRound1(db:web::Data<db::Pool>,item:web::Json<crate::model_round
         .values(&new_RD)
         .execute(&mut conn)
         .expect("Error creating Round1 Stage Config");
+    srv.get_ref().do_send(Round1RefreshMessage {msg:"refresh".parse().unwrap() });
+
     HttpResponse::Ok().json(
         web::Json(SuccessReturnJson{
             status:"success".to_string()

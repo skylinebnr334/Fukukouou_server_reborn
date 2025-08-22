@@ -261,7 +261,7 @@ async fn getNextRound1(db:web::Data<db::Pool>)->impl Responder{
         }))
     }HttpResponse::Ok().json(web::Json(Round1NextRoundDT{
         current_stage:0,
-        current_question:-1,
+        current_question:0,
     }))
 }
 
@@ -378,6 +378,43 @@ async fn get_StopVideo(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,
 }
 
 
+#[utoipa::path(
+    post,
+    path="/Server1/play_video",
+    responses(
+        (status = 200, description = "None"),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[post("/play_video")]
+async fn post_PlayStart(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,
+)->impl Responder{
+    srv.get_ref().do_send(Round1RefreshMessage {msg:"VIDEO_START".parse().unwrap() });
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
+#[utoipa::path(
+    post,
+    path="/Server1/stop_video",
+    responses(
+        (status = 200, description = "None"),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[post("/stop_video")]
+async fn post_StopVideo(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,
+)->impl Responder{
+    srv.get_ref().do_send(Round1RefreshMessage {msg:"VIDEO_STOP".parse().unwrap() });
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
+
 pub fn Round1config(cfg: &mut web::ServiceConfig) {
     cfg.service(web::scope("/Server1")
         .service(getRoundDatasR1)
@@ -394,6 +431,8 @@ pub fn Round1config(cfg: &mut web::ServiceConfig) {
         .service(postRound1UsedQuestion)
         .service(get_PlayStart)
         .service(get_StopVideo)
+        .service(post_PlayStart)
+        .service(post_StopVideo)
         .service(web::resource("/round1_ws").to(ws_route_Round1Refresh))
     );
 

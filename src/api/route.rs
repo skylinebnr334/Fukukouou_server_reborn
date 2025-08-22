@@ -25,7 +25,9 @@ route::Round2Server::postNextRound2,
 route::Round1Server::getRound1UsedQuestions,
 route::Round1Server::postRound1UsedQuestion,
 route::Round1Server::get_PlayStart,
-route::Round1Server::get_StopVideo
+route::Round1Server::get_StopVideo,
+    route::Round1Server::post_PlayStart,
+    route::Round1Server::post_StopVideo
 ),
 components(
     schemas(

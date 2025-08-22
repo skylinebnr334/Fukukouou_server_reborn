@@ -23,7 +23,9 @@ route::Round2Server::getNextRound2,
 route::Round2Server::postNextRound2,
     route::Round2Server::get_round2data_by_id,
 route::Round1Server::getRound1UsedQuestions,
-route::Round1Server::postRound1UsedQuestion
+route::Round1Server::postRound1UsedQuestion,
+route::Round1Server::get_PlayStart,
+route::Round1Server::get_StopVideo
 ),
 components(
     schemas(

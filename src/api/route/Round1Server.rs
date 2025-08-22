@@ -98,7 +98,6 @@ async fn getRoundQuestionsR1_Child(db:web::Data<db::Pool>,
     }
 }
 
-
 #[utoipa::path(
     post,
     path="/Server1/questions",
@@ -278,7 +277,7 @@ async fn getNextRound1(db:web::Data<db::Pool>)->impl Responder{
     ),
 )]
 #[post("/next_round")]
-async fn postNextRound1(db:web::Data<db::Pool>,item:web::Json<crate::model_round1::Round1NextRoundDT>)->impl Responder{
+async fn postNextRound1(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,item:web::Json<crate::model_round1::Round1NextRoundDT>)->impl Responder{
     let mut conn=db.get().unwrap();
     let new_RD=crate::model_round1::Round1IndexRound{
         id:0,
@@ -341,6 +340,43 @@ async fn postRound1UsedQuestion(db:web::Data<db::Pool>,item:web::Json<crate::mod
         })
     )
 }
+#[utoipa::path(
+    get,
+    path="/Server1/play_video",
+    responses(
+        (status = 200, description = "None"),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[get("/play_video")]
+async fn get_PlayStart(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,
+                      )->impl Responder{
+    srv.get_ref().do_send(Round1RefreshMessage {msg:"VIDEO_START".parse().unwrap() });
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
+#[utoipa::path(
+    get,
+    path="/Server1/stop_video",
+    responses(
+        (status = 200, description = "None"),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[get("/stop_video")]
+async fn get_StopVideo(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>,
+)->impl Responder{
+    srv.get_ref().do_send(Round1RefreshMessage {msg:"VIDEO_STOP".parse().unwrap() });
+    HttpResponse::Ok().json(
+        web::Json(SuccessReturnJson{
+            status:"success".to_string()
+        })
+    )
+}
+
 
 pub fn Round1config(cfg: &mut web::ServiceConfig) {
     cfg.service(web::scope("/Server1")
@@ -356,6 +392,8 @@ pub fn Round1config(cfg: &mut web::ServiceConfig) {
         .service(postRoundQuestionsR1)
         .service(getRound1UsedQuestions)
         .service(postRound1UsedQuestion)
+        .service(get_PlayStart)
+        .service(get_StopVideo)
         .service(web::resource("/round1_ws").to(ws_route_Round1Refresh))
     );
 

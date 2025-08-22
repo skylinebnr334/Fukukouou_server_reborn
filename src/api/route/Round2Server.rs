@@ -104,9 +104,13 @@ async fn postRound2Data_PLUS(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>
             if(MISS_TIMIN_FLAG==-1){
                 MISS_TIMIN_FLAG=dt.miss_timing;
             }
+            let mut new_current_phase=dt.current_phase+item.current_phase_PLUS;
+            if(new_current_phase<0){
+                new_current_phase=0;
+            }
             let new_data=crate::model_round2::Round2DataColumn{
                 team_id: item.team_id,
-                current_phase: dt.current_phase+item.current_phase_PLUS,
+                current_phase: new_current_phase,
                 latest_down_num: latest_DWN_FFLAG,
                 miss_timing:MISS_TIMIN_FLAG,
             };
@@ -122,9 +126,13 @@ async fn postRound2Data_PLUS(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>
             )
         }
         Err(err)=>{
+            let mut CPHASE=item.current_phase_PLUS;
+            if(CPHASE<0) {
+                CPHASE=0;
+            }
             let new_data=crate::model_round2::Round2DataColumn{
                 team_id: item.team_id,
-                current_phase: item.current_phase_PLUS,
+                current_phase: CPHASE,
                 latest_down_num: item.latest_down_num,
                 miss_timing: item.miss_timing,
             };

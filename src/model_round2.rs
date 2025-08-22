@@ -11,6 +11,13 @@ pub struct Round2DataColumn{
     pub latest_down_num:i32,
     pub miss_timing:i32,
 }
+#[derive(Queryable, Deserialize, Serialize, Clone,ToSchema)]
+pub struct Round2DataColumn_PLUS{
+    pub team_id:i32,
+    pub current_phase_PLUS:i32,
+    pub latest_down_num:i32,
+    pub miss_timing:i32,
+}
 #[derive(Queryable, Deserialize, Serialize,ToSchema)]
 
 pub struct Round2DataReturnStruct{

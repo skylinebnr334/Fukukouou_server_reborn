@@ -3,7 +3,7 @@ use actix::Addr;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use actix_web_actors::ws;
 use crate::{db, schema};
-use crate::model_round2::{Round2DataColumn, Round2DataReturnStruct, Round2DataReturnStruct_KOBETSU, Round2IndexRound, Round2NextRoundDT};
+use crate::model_round2::{Round2DataColumn, Round2DataColumn_PLUS, Round2DataReturnStruct, Round2DataReturnStruct_KOBETSU, Round2IndexRound, Round2NextRoundDT};
 
 use diesel::{QueryDsl, RunQueryDsl};
 use crate::actorServer_forws::{WsSession_Round2Refresh};
@@ -74,6 +74,72 @@ async fn postRound2Data(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>, ite
             status:"success".to_string()
         })
     )
+}
+
+
+#[utoipa::path(
+    post,
+    path="/Server2/round_datas_plus",
+    request_body = Round2DataColumn_PLUS,
+    responses(
+        (status = 200, description = "Register Round2 ScoreData PLUS", body = SuccessReturnJson),
+        (status = 500, description = "Internal error")
+    ),
+)]
+#[post("/round_datas_plus")]
+async fn postRound2Data_PLUS(db:web::Data<db::Pool>,srv:web::Data<Addr<WsActor>>, item:web::Json<crate::model_round2::Round2DataColumn_PLUS>)->impl Responder{
+    let mut conn=db.get().unwrap();
+    let Result_DT=schema::round2_data::table
+        .find(item.team_id)
+        .first::<Round2DataColumn>(&mut conn);
+    match Result_DT{
+        Ok(dt)=>{
+            let mut latest_DWN_FFLAG:i32=-1;
+            let mut MISS_TIMIN_FLAG:i32=-1;
+            latest_DWN_FFLAG=item.latest_down_num;
+            MISS_TIMIN_FLAG=item.miss_timing;
+            if(latest_DWN_FFLAG==-1){
+                latest_DWN_FFLAG=dt.latest_down_num;
+            }
+            if(MISS_TIMIN_FLAG==-1){
+                MISS_TIMIN_FLAG=dt.miss_timing;
+            }
+            let new_data=crate::model_round2::Round2DataColumn{
+                team_id: item.team_id,
+                current_phase: dt.current_phase+item.current_phase_PLUS,
+                latest_down_num: latest_DWN_FFLAG,
+                miss_timing:MISS_TIMIN_FLAG,
+            };
+            diesel::replace_into(schema::round2_data::dsl::round2_data)
+                .values(&new_data)
+                .execute(&mut conn)
+                .expect("Error creating Round1 data");
+            srv.get_ref().do_send(Round2RefreshMessage {msg:"refresh".parse().unwrap() });
+            HttpResponse::Ok().json(
+                web::Json(SuccessReturnJson{
+                    status:"success".to_string()
+                })
+            )
+        }
+        Err(err)=>{
+            let new_data=crate::model_round2::Round2DataColumn{
+                team_id: item.team_id,
+                current_phase: item.current_phase_PLUS,
+                latest_down_num: item.latest_down_num,
+                miss_timing: item.miss_timing,
+            };
+            diesel::replace_into(schema::round2_data::dsl::round2_data)
+                .values(&new_data)
+                .execute(&mut conn)
+                .expect("Error creating Round1 data");
+            srv.get_ref().do_send(Round2RefreshMessage {msg:"refresh".parse().unwrap() });
+            HttpResponse::Ok().json(
+                web::Json(SuccessReturnJson{
+                    status:"success".to_string()
+                })
+            )
+        }
+    }
 }
 #[utoipa::path(
     get,
@@ -163,5 +229,6 @@ pub fn Round2Config(cfg: &mut web::ServiceConfig){
     .service(get_round2data_by_id)
         .service(getNextRound2)
         .service(postNextRound2)
+        .service(postRound2Data_PLUS)
                     .service(web::resource("/round2_ws").to(ws_route_Round2Refresh)));
 }
